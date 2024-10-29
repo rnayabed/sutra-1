@@ -25,10 +25,13 @@ Note: the values marked with ~ are approximate.
 - 1 Accumulator                 (PIPO Universal Shift register)     ~210    (55)
 - 3 General register            (normal register)                   ~40x3   (30)
 - 1 MAR (20 bit)                (normal register w/ 20 bits)        ~80     (20)
-- 1 Stack pointer (20 bit)      (normal register w/ 20 bits)        ~80     (20)
+- 1 Stack pointer (10 bit)      (normal register w/ 10 bits)        ~40     (10)
 - 1 PC Load Register (20 bit)   (normal register w/ 20 bits)        ~80     (20)
 - 1 Program counter (20 bit)    (sync counter)                      ~500    (125)
 - ALU                                                               ~410    (103)
+- ALU Result register
+- ALU Result Flags register (zero, negative, carry)
+- Instruction Register (part of Control unit?)
 - ALU Flags register            (normal register w/ 3 bits)         ~12     (3)
 - Interrupt Status Register     (normal register w/ 4 bits)         ~16     (4)
 - Interrupt Mask Register       (normal register w/ 4 bits)         ~16     (4)
@@ -80,3 +83,6 @@ Normal execution continues
 ### Notes
 
 - Instead of having a specific register to store Return value. we will use a specific address in memory
+
+
+NEED TO REMOVE FLAG #37 (CLEAR ISR)
