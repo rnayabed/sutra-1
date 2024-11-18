@@ -74,6 +74,7 @@ MARH LOAD HIGH: #35
 
 
 ALU source/destinations:
+(COPY too?)
 A, B, C, D, MARL, MARH, SP, IMR
 = 8 (3 bits)
 
@@ -205,10 +206,12 @@ HALT[10]
 
 ## Machine Cycle
 
+(HIGH)
 #1 high     fetch & decode
             PC OUT, MEMORY OUT, IR IN
             #29, #31
 
+(LOW)
 #2 high     execute
             run flags based on IR value (control logic)
             PC increment if not HLT
@@ -298,6 +301,10 @@ HALT
 35. MAR HIGHER (10-19)    - LOAD HIGHER (0-4)
 36. MAR OUT (20 bits at once)
 37. IR OUT
+
+## TODO
+
+Does #37 need to go?
 
 
 ## Program Counter 

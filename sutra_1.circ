@@ -990,6 +990,10 @@
     <comp lib="5" loc="(3200,1010)" name="7-Segment Display"/>
     <comp lib="5" loc="(3260,1010)" name="7-Segment Display"/>
     <comp lib="5" loc="(3320,1010)" name="7-Segment Display"/>
+    <comp lib="5" loc="(3990,1060)" name="7-Segment Display"/>
+    <comp lib="5" loc="(4050,1060)" name="7-Segment Display"/>
+    <comp lib="5" loc="(4110,1060)" name="7-Segment Display"/>
+    <comp lib="5" loc="(4170,1060)" name="7-Segment Display"/>
     <comp lib="8" loc="(2520,1125)" name="Text">
       <a name="text" val="B"/>
     </comp>
@@ -998,6 +1002,9 @@
     </comp>
     <comp lib="8" loc="(3230,1155)" name="Text">
       <a name="text" val="C"/>
+    </comp>
+    <comp lib="8" loc="(4080,1205)" name="Text">
+      <a name="text" val="D"/>
     </comp>
     <comp lib="8" loc="(4160,1470)" name="Text">
       <a name="text" val="MEMORY"/>
@@ -1023,6 +1030,13 @@
     <comp lib="9" loc="(3200,1010)" name="BCD_to_7_Segment_decoder"/>
     <comp lib="9" loc="(3260,1010)" name="BCD_to_7_Segment_decoder"/>
     <comp lib="9" loc="(3320,1010)" name="BCD_to_7_Segment_decoder"/>
+    <comp lib="9" loc="(3990,1060)" name="BCD_to_7_Segment_decoder"/>
+    <comp lib="9" loc="(4000,1160)" name="Binary_to_BCD_converter">
+      <a name="binvalue" val="10"/>
+    </comp>
+    <comp lib="9" loc="(4050,1060)" name="BCD_to_7_Segment_decoder"/>
+    <comp lib="9" loc="(4110,1060)" name="BCD_to_7_Segment_decoder"/>
+    <comp lib="9" loc="(4170,1060)" name="BCD_to_7_Segment_decoder"/>
     <comp loc="(1100,1300)" name="ControlDestination"/>
     <comp loc="(1100,830)" name="Or3"/>
     <comp loc="(1420,640)" name="Buffer10">
@@ -1455,7 +1469,6 @@
     <wire from="(2200,1390)" to="(2610,1390)"/>
     <wire from="(2210,1940)" to="(2210,2130)"/>
     <wire from="(2210,1940)" to="(3010,1940)"/>
-    <wire from="(2210,2130)" to="(2270,2130)"/>
     <wire from="(2220,1950)" to="(2220,2010)"/>
     <wire from="(2220,1950)" to="(3000,1950)"/>
     <wire from="(2220,2010)" to="(2220,2210)"/>
@@ -1557,7 +1570,6 @@
     <wire from="(2720,510)" to="(2720,570)"/>
     <wire from="(2720,570)" to="(2740,570)"/>
     <wire from="(2730,1390)" to="(2730,2560)"/>
-    <wire from="(2730,1390)" to="(3250,1390)"/>
     <wire from="(2730,2560)" to="(2840,2560)"/>
     <wire from="(2730,530)" to="(2730,590)"/>
     <wire from="(2730,590)" to="(2740,590)"/>
@@ -1790,11 +1802,9 @@
     <wire from="(3380,2280)" to="(3390,2280)"/>
     <wire from="(3390,1710)" to="(3390,1900)"/>
     <wire from="(3390,1710)" to="(3530,1710)"/>
-    <wire from="(3390,1900)" to="(3390,1980)"/>
     <wire from="(3390,1900)" to="(3470,1900)"/>
     <wire from="(3400,1720)" to="(3400,1800)"/>
     <wire from="(3400,1720)" to="(3540,1720)"/>
-    <wire from="(3400,1800)" to="(3400,1980)"/>
     <wire from="(3400,1800)" to="(3470,1800)"/>
     <wire from="(3400,2680)" to="(3400,2700)"/>
     <wire from="(3400,2680)" to="(3410,2680)"/>
@@ -1959,11 +1969,12 @@
     <wire from="(3650,400)" to="(3650,650)"/>
     <wire from="(3660,480)" to="(3660,650)"/>
     <wire from="(3660,480)" to="(3670,480)"/>
-    <wire from="(3660,890)" to="(3700,890)"/>
+    <wire from="(3660,890)" to="(3680,890)"/>
     <wire from="(3670,370)" to="(3670,400)"/>
     <wire from="(3670,670)" to="(3760,670)"/>
     <wire from="(3670,910)" to="(3670,1200)"/>
     <wire from="(3670,910)" to="(3700,910)"/>
+    <wire from="(3680,1160)" to="(3970,1160)"/>
     <wire from="(3680,2260)" to="(3680,2280)"/>
     <wire from="(3680,2260)" to="(3690,2260)"/>
     <wire from="(3680,2280)" to="(3680,2300)"/>
@@ -1976,6 +1987,8 @@
     <wire from="(3680,2450)" to="(3690,2450)"/>
     <wire from="(3680,2470)" to="(3680,2490)"/>
     <wire from="(3680,2490)" to="(3690,2490)"/>
+    <wire from="(3680,890)" to="(3680,1160)"/>
+    <wire from="(3680,890)" to="(3700,890)"/>
     <wire from="(3690,1490)" to="(3700,1490)"/>
     <wire from="(3690,1800)" to="(3700,1800)"/>
     <wire from="(3690,2550)" to="(3690,2570)"/>
@@ -2153,7 +2166,6 @@
     <wire from="(4030,3000)" to="(4030,3010)"/>
     <wire from="(4030,3010)" to="(4040,3010)"/>
     <wire from="(4030,630)" to="(4050,630)"/>
-    <wire from="(4040,1550)" to="(4040,1580)"/>
     <wire from="(4040,2740)" to="(4040,2760)"/>
     <wire from="(4040,3010)" to="(4040,3260)"/>
     <wire from="(4040,3010)" to="(4050,3010)"/>
