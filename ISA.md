@@ -26,6 +26,15 @@ Copy sources:
 A, B, C, D, SP, IMR, ISR
 = 7 (3 bits)
 
+Copy destinations:
+A, B, C, D, SP, IMR, MARL, MARH
+= 8 (3 bits) 
+
+
+
+
+
+
 
 A OUT: #7      6
 B OUT: #14      13

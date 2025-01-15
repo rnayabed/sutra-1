@@ -266,6 +266,7 @@
       <a name="output" val="true"/>
       <a name="width" val="37"/>
     </comp>
+    <comp lib="0" loc="(2840,670)" name="Clock"/>
     <comp lib="0" loc="(2900,1770)" name="Splitter">
       <a name="bit1" val="0"/>
       <a name="bit10" val="0"/>

@@ -2,21 +2,22 @@
 
 | Instruction | Verified |
 |-------------|----------|
-| COPY        |        |
-| LOADIL      | ✔ |
-| LOADIU      | ✔ |
-| ALUFSET     |        |
-| ALUEVAL     |        |
-| ALUSTOREF   |        |
-| ALUSTORER   |        |
-| STORE       |        |
-| ACCU        |        |
-| JUMP        |        |
-| OUT         |        |
-| CLEARISR    |        |
-| ALUFSET     |        |
-| NOOP        |        |
-| HALT        |        |
+| COPY        |          |
+| LOADIL      |          |
+| LOADIU      |          |
+| ALUFSET     |          |
+| ALUEVAL     |          |
+| ALUSTOREF   |          |
+| ALUSTORER   |          |
+| STORE       |          |
+| LOAD        |          |
+| ACCU        |          |
+| JUMP        |          |
+| OUT         |          |
+| CLEARISR    |          |
+| ALUFSET     |          |
+| NOOP        |          |
+| HALT        |          |
 
 
 
