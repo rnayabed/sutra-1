@@ -147,6 +147,15 @@ LOADIU[3]       <DESTINATION 2> <DATA 5>
 ALUFSET[3]      <FLAGS 7>
 011
 
+ALU flags:
+6 - output compliment
+5 - NAND
+4 - Carry in
+3 - B compliment
+2 - B zero
+1 - A compliment
+0 - A zero
+
 non ground flags for source
 #5, #3, #4, #36, #30
 2 3 4 29 35

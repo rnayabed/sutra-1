@@ -3,8 +3,8 @@
 | Instruction | Verified |
 |-------------|----------|
 | COPY        |          |
-| LOADIL      |          |
-| LOADIU      |          |
+| LOADIL      |    x     |
+| LOADIU      |    x     |
 | ALUFSET     |          |
 | ALUEVAL     |          |
 | ALUSTOREF   |          |
@@ -15,7 +15,7 @@
 | JUMP        |          |
 | OUT         |          |
 | CLEARISR    |          |
-| ALUFSET     |          |
+| ALUFSETR    |          |
 | NOOP        |          |
 | HALT        |          |
 

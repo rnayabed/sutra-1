@@ -1,10 +1,26 @@
-# LOADIL & LOADIU
+//# DEFINE MY_NUMNER 420
+// LOADIL A 00100
+// LOADIU A 01101
+//LOADI A MY_NUMNER
 
-# aim: load the number "420" (01101 00100b) to A
+/*
+ALU flags:
+6 - output compliment
+5 - NAND
+4 - Carry in
+3 - B compliment
+2 - B zero
+1 - A compliment
+0 - A zero
+*/
 
-LOADIL  A   00100
-# 010     00  00100   0100000100  104
-LOADIU A 01101
-# 001     00  01101   0010001101  08D
+LOADI A 420
+LOADI B 69
+LOADI MARH 22
+//ALUFSET 0000000
+//ALUEVAL B
+//ALUSTORER C
+
+
+
 HALT
-# 1111111111          1111111111  3FF
