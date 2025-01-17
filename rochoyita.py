@@ -1,9 +1,31 @@
+#!/bin/python
 # rochoyita - simple assembler for sutra-1
 
-import math, enum, re
+import math, enum, re, argparse, pathlib, itertools
 
-input_file_name = 'input.sutra-1'
-output_file_name = 'image'
+def error_raw(*text):
+    print('\033[1;4;7;31m') # red with blue, underline, inverted text
+    print('\n'.join(text))
+    print('\033[0m')
+    exit(1)
+
+# handle args
+parser = argparse.ArgumentParser(
+    prog='rochoyita',
+    description='Simple assembler from the Sutra-1 System',
+    epilog='Copyright (C) 2025 Debayan "rnayabed" Sutradhar'
+)
+
+parser.add_argument('-o', '--output')
+parser.add_argument('input')
+args = parser.parse_args()
+
+input_file_name = args.input
+output_file_name = args.output if args.output is not None else input_file_name + '.out'
+
+if not pathlib.Path(input_file_name).is_file():
+    error_raw(f'input file "{input_file_name}" not found!')
+
 
 class Instruction:
     def __init__(self, op_code, operands=()):
@@ -96,7 +118,12 @@ instructions = {
             Operand(OperandType.SOURCE,         3),
         )
     ),
-    'CLEARISR'  : Instruction('1010000000'),
+    'LOADISR'  : Instruction(
+        '101000',
+        (
+            Operand(OperandType.DATA,           4),
+        )
+    ),
     'ALUFSETR'   : Instruction(
         '10100100',
         (
@@ -104,19 +131,22 @@ instructions = {
         )
     ),
     'NOOP'      : Instruction('0000000000'),
-    'HALT'      : Instruction('1111111111')
+    'HALT'      : Instruction('1111111111'),
+    'ILOCKSET'  : Instruction(
+        '101010000',
+        (
+            Operand(OperandType.DATA,           1),
+        )
+    )
 }
 destination_registers = ('A', 'B', 'C', 'D', 'SP', 'IMR', 'MARL', 'MARH')
 source_registers = ('A', 'B', 'C', 'D', 'SP', 'IMR', 'ISR')
 
-
 def error(line_number, line, error):
-    print('\033[1;4;7;31m') # red with blue, underline, inverted text
-    print(f'ERROR in line #{line_number}: "{line}"')
-    print(error)
-    print('\033[0m')
-    exit(1)
-
+    error_raw(
+        f'ERROR{' in line #{line_number}' if line_number is not None else ''}: "{line}"',
+        error
+    )
 
 # pre process
 line_number = 0
@@ -166,8 +196,11 @@ line_number = 0
 multi_line_comment_block = False
 output = []
 
-def assemble(line, line_number, tokens, instruction_code):
-    instruction = instructions[instruction_code]
+# mnemonic -> hex
+def assemble(line, tokens, line_number=None):
+    instruction = instructions[tokens[0]]
+
+    print('\033[32mASSEMBLE', line.ljust(20), sep='\t', end='\t')
 
     if (len(tokens) - 1) != len(instruction.operands):
         error(line_number, line, f'operands mismatch. expected {len(instruction.operands)}, given {len(tokens) - 1}')
@@ -199,28 +232,35 @@ def assemble(line, line_number, tokens, instruction_code):
 
             output_instruction += token
 
+
     if len(output_instruction) != 10:
         error(line_number, line, f'resultant assembled instruction {output_instruction} does not match standard length')
 
-    return (output_instruction,)
+    hex_ = format(int(output_instruction, 2), 'X')
+    print(output_instruction, hex_ + '\033[0m', sep='\t')
 
-def pseudo_assemble_loadi(line, line_number, tokens, signed=True):
+    return (hex_,)
+
+# Pseudo assemble: mnemonic -> another mnemonic
+
+def pseudo_assemble_loadi(line, tokens, line_number=None, signed=True):
     # LOADI <destination:2> <value>
 
     if len(tokens) != 3:
         error(line, line_number, f'invalid {'LOADI' if signed else 'LOADI_UNSIGNED'} syntax')
     
-    destination_str = tokens[1]
+    destination = tokens[1]
     value_str = tokens[2]
 
-    # Add common verification block
-    if destination_str not in destination_registers:
-        error(line_number, line, f'invalid destination register "{destination_str}"')
+    # # Add common verification block
+    # if destination_str not in destination_registers:
+    #     error(line_number, line, f'invalid destination register "{destination_str}"')
 
-    index = destination_registers.index(destination_str)
-    if index > 2**2:
-        error(line_number, line, f'destination register "{destination_str}" not allowed. it must be between {', '.join(destination_registers[i] for i in range(2**2))}')
-    destination = format(index, 'b').zfill(2)
+    # index = destination_registers.index(destination_str)
+    # TODO: add this type in assemble?
+    # if index > 2**2:
+    #     error(line_number, line, f'destination register "{destination_str}" not allowed. it must be between {', '.join(destination_registers[i] for i in range(2**2))}')
+    # destination = format(index, 'b').zfill(2)
 
     try:
         value_int = int(value_str)
@@ -244,71 +284,32 @@ def pseudo_assemble_loadi(line, line_number, tokens, signed=True):
     value_upper = value[:5]
     value_lower = value[5:]
 
-    output_instructions = (
-        instructions['LOADIU'].op_code + destination + value_upper,
-        instructions['LOADIL'].op_code + destination + value_lower  
+    output_mnemonics = (
+        f'LOADIU {destination} {value_upper}',
+        f'LOADIL {destination} {value_lower}'  
     )
 
-    for i in output_instructions:
-        if len(i) != 10:
-            error(line_number, line, f'resultant pseudo assembled instruction {i} does not match standard length')
+    return (itertools.chain(*(assemble(m, m.split()) for m in output_mnemonics)))
 
-    return output_instructions 
+def pseudo_assemble_loadi_unsigned(line, tokens, line_number=None):
+    return pseudo_assemble_loadi(line, tokens, False, line_number)
 
-def pseudo_assemble_loadi_unsigned(line, line_number, tokens):
-    return pseudo_assemble_loadi(line, line_number, tokens, False)
-
-def pseudo_assemble_add(line, line_number, tokens):
+def pseudo_assemble_add(line, tokens, line_number=None):
     # ADD <source> <destination>
 
     if len(tokens) != 3:
-        error(line, line_number, f'invalid ADD syntax')
+        error(line_number, line, f'invalid ADD syntax')
     
-    source_str = tokens[1]
-    destination_str = tokens[2]
+    source = tokens[1]
+    destination = tokens[2]
 
-    # TODO: FIX
-
-    if source_str not in source_registers:
-        error(line_number, line, f'"{source_str}" is not a valid source register')
-    source = format(source_registers.index(source_str), 'b').zfill(2)
-
-    if destination_str not in destination_registers:
-        error(line_number, line, f'"{destination_str}" is not a valid destination register')
-    destination = format(destination_registers.index(destination_str), 'b').zfill(2)
-
-    try:
-        value_int = int(value_str)
-        if signed:
-            if value_int < -512 or value_int > 511:
-                error(line_number, line, f'invalid integer {value_str} - range must be between -512 and 511 (inclusive)')
-
-            value = format(abs(value_int), 'b').zfill(10)
-            if value_int < 0:
-                value = ''.join('1' if c == '0' else '0' for c in value)
-                value = format(int(value, 2) + 1, 'b')
-        else:
-            if value_int < 0 or value_int > 1023:
-                error(line_number, line, f'invalid integer {value_str} - range must be between 0 and 1023 (inclusive)')
-
-            value = format(abs(value_int), 'b').zfill(10)           
-
-    except Exception as e:
-        error(line_number, line, f'{value_str} is not a valid integer')
-
-    value_upper = value[:5]
-    value_lower = value[5:]
-
-    output_instructions = (
-        instructions['LOADIU'].op_code + destination + value_upper,
-        instructions['LOADIL'].op_code + destination + value_lower  
+    output_mnemonics = (
+        'ALUFSET 0000000',
+        f'ALUEVAL {source}',
+        f'ALUSTORER {destination}',
     )
 
-    for i in output_instructions:
-        if len(i) != 10:
-            error(line_number, line, f'resultant pseudo assembled instruction {i} does not match standard length')
-
-    return output_instructions 
+    return (itertools.chain(*(assemble(m, m.split()) for m in output_mnemonics)))
 
 
 pseudo_instructions = {
@@ -333,18 +334,15 @@ for line in source_lines:
     instruction = tokens[0].upper()
     
     if instruction in instructions:
-        output_instructions = assemble(line, line_number, tokens, instruction)
+        output += assemble(line, tokens, line_number)
     elif instruction in pseudo_instructions:
         print('\033[33mPSEUDO  ', line.ljust(20), '\033[0m', sep='\t')
-        output_instructions = pseudo_instructions[instruction](line, line_number, tokens)
+        output += pseudo_instructions[instruction](line, tokens, line_number)
     else:
         error(line_number, line, f'"{instruction}" is not a valid instruction')
         exit(1)
 
-    for ins in output_instructions:
-        hex_ = format(int(ins, 2), 'X')
-        print('\033[32mASSEMBLE', line.ljust(20), ins, hex_ + '\033[0m', sep='\t')
-        output.append(hex_)
+    # output_instructions are already in hex
 
     # output += [format(int(i, 2), 'X') for i in output_instructions]
 

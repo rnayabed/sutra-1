@@ -14,10 +14,11 @@
 | ACCU        |          |
 | JUMP        |          |
 | OUT         |          |
-| CLEARISR    |          |
+| LOADISR     |          |
 | ALUFSETR    |          |
 | NOOP        |          |
 | HALT        |          |
+| ILOCKSET    |          |
 
 
 

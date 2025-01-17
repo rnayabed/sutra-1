@@ -207,11 +207,11 @@ b1 b0
 OUT[7]          <SOURCE 3>
 100111.0
 
-CLEARISR [10]       
+LOADISR [10]       
 101000.0000
 #37, #21
 
-ALUFSET[8]         <SOURCE 2>
+ALUFSETR[8]         <SOURCE 2>
 101001.00
 #6
     
@@ -221,6 +221,8 @@ NOOP[10]
 HALT[10]
 1111111111
 
+ILOCKSET[9]     <BIT>
+10101.0000      X
 
 ## Machine Cycle
 
@@ -319,6 +321,7 @@ HALT
 35. MAR HIGHER (10-19)    - LOAD HIGHER (0-4)
 36. MAR OUT (20 bits at once)
 37. IR OUT
+38. ILOCK IN
 
 ## TODO
 
