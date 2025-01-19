@@ -27,6 +27,8 @@ if not pathlib.Path(input_file_name).is_file():
     error_raw(f'input file "{input_file_name}" not found!')
 
 
+# TODO: use dataclass? or move all functions down here
+
 class Instruction:
     def __init__(self, op_code, operands=()):
         self.op_code = op_code
@@ -144,11 +146,12 @@ source_registers = ('A', 'B', 'C', 'D', 'SP', 'IMR', 'ISR')
 
 def error(line_number, line, error):
     error_raw(
-        f'ERROR{' in line #{line_number}' if line_number is not None else ''}: "{line}"',
+        f'ERROR{f' in line #{line_number}' if line_number is not None else ''}: "{line}"',
         error
     )
 
 # pre process
+
 line_number = 0
 multi_line_comment_block = False
 
@@ -172,7 +175,7 @@ for line in source_file:
         tokens = line.split() 
         
         if len(tokens[1]) < 2:
-            error(f'invalid preprocessor use')
+            error(line_number, line, f'invalid preprocessor use')
 
         if tokens[1].upper() == 'DEFINE': 
             if len(tokens) != 4:
@@ -194,7 +197,13 @@ source_file.close()
 # assemble
 line_number = 0
 multi_line_comment_block = False
-output = []
+program_output = []
+isr_output = []
+ISR_ADDRESS = 0xff800       # TODO: move this to magic
+label_addresses = {
+    ':ISR': ISR_ADDRESS
+}
+label_unassembled_lines = []
 
 # mnemonic -> hex
 def assemble(line, tokens, line_number=None):
@@ -216,12 +225,22 @@ def assemble(line, tokens, line_number=None):
         if operand_info.type == OperandType.DESTINATION:
             if token not in destination_registers:
                 error(line_number, line, f'"{token}" is not a valid destination register')
-            output_instruction += format(destination_registers.index(token), 'b').zfill(operand_info.length)
+            
+            index = destination_registers.index(token)
+            if index >= 2 ** operand_info.length:
+                error(line_number, line, f'destination register "{token}" not allowed. it must be between {', '.join(destination_registers[i] for i in range(2 ** operand_info.length))}')
+
+            output_instruction += format(index, 'b').zfill(operand_info.length)
 
         elif operand_info.type == OperandType.SOURCE:
             if token not in source_registers:
                 error(line_number, line, f'"{token}" is not a valid source register')
-            output_instruction += format(source_registers.index(token), 'b').zfill(operand_info.length)
+
+            index = source_registers.index(token)
+            if index >= 2 ** operand_info.length:
+                error(line_number, line, f'source register "{token}" not allowed. it must be between {', '.join(source_registers[i] for i in range(2 ** operand_info.length))}')
+
+            output_instruction += format(index, 'b').zfill(operand_info.length)
             
         elif operand_info.type == OperandType.DATA:
             if operand_info.length != len(token):
@@ -239,85 +258,338 @@ def assemble(line, tokens, line_number=None):
     hex_ = format(int(output_instruction, 2), 'X')
     print(output_instruction, hex_ + '\033[0m', sep='\t')
 
-    return (hex_,)
+    return hex_
 
-# Pseudo assemble: mnemonic -> another mnemonic
+# Helper funcs
 
-def pseudo_assemble_loadi(line, tokens, line_number=None, signed=True):
-    # LOADI <destination:2> <value>
-
-    if len(tokens) != 3:
-        error(line, line_number, f'invalid {'LOADI' if signed else 'LOADI_UNSIGNED'} syntax')
-    
-    destination = tokens[1]
-    value_str = tokens[2]
-
-    # # Add common verification block
-    # if destination_str not in destination_registers:
-    #     error(line_number, line, f'invalid destination register "{destination_str}"')
-
-    # index = destination_registers.index(destination_str)
-    # TODO: add this type in assemble?
-    # if index > 2**2:
-    #     error(line_number, line, f'destination register "{destination_str}" not allowed. it must be between {', '.join(destination_registers[i] for i in range(2**2))}')
-    # destination = format(index, 'b').zfill(2)
-
+def generate_binary(line_number, line, value_str, signed, bits):
     try:
-        value_int = int(value_str)
-        if signed:
-            if value_int < -512 or value_int > 511:
-                error(line_number, line, f'invalid integer {value_str} - range must be between -512 and 511 (inclusive)')
+        match value_str[0]:
+            case 'h':
+                base = 16
+            case 'o':
+                base = 8
+            case 'b':
+                base = 2
+            case _:
+                base = 10
 
-            value = format(abs(value_int), 'b').zfill(10)
+        value_int = int(value_str if base == 10 else value_str[1:], base)
+
+        if signed:
+            max_value = 2**(bits - 1) - 1;
+            min_value = - 2**(bits - 1);
+            if value_int < min_value or value_int > max_value:
+                error(line_number, line, f'invalid integer {value_str} - range must be between {min_value} and {max_value} (inclusive)')
+
+            # remove '-' from value and convert into 2's compliment
+            value = format(abs(value_int), 'b').zfill(bits)
             if value_int < 0:
                 value = ''.join('1' if c == '0' else '0' for c in value)
                 value = format(int(value, 2) + 1, 'b')
         else:
+            max_value = 2**(bits) - 1;
             if value_int < 0 or value_int > 1023:
-                error(line_number, line, f'invalid integer {value_str} - range must be between 0 and 1023 (inclusive)')
+                error(line_number, line, f'invalid integer {value_str} - range must be between 0 and {max_value} (inclusive)')
 
-            value = format(abs(value_int), 'b').zfill(10)           
+            value = format(abs(value_int), 'b').zfill(bits)           
 
     except Exception as e:
         error(line_number, line, f'{value_str} is not a valid integer')
-
-    value_upper = value[:5]
-    value_lower = value[5:]
-
-    output_mnemonics = (
-        f'LOADIU {destination} {value_upper}',
-        f'LOADIL {destination} {value_lower}'  
-    )
-
-    return (itertools.chain(*(assemble(m, m.split()) for m in output_mnemonics)))
-
-def pseudo_assemble_loadi_unsigned(line, tokens, line_number=None):
-    return pseudo_assemble_loadi(line, tokens, False, line_number)
-
-def pseudo_assemble_add(line, tokens, line_number=None):
-    # ADD <source> <destination>
-
-    if len(tokens) != 3:
-        error(line_number, line, f'invalid ADD syntax')
     
-    source = tokens[1]
-    destination = tokens[2]
+    return value
 
-    output_mnemonics = (
-        'ALUFSET 0000000',
-        f'ALUEVAL {source}',
-        f'ALUSTORER {destination}',
+# Pseudo assemble: mnemonic -> another mnemonic
+
+def pseudo_assemble_loadi(line, tokens, line_number):
+    # LOADI <destination:2> <value>
+
+    signed = tokens[0] != 'LOADI_UNSIGNED'
+    
+    destination = tokens[1]
+    value_str = tokens[2]
+
+    value = generate_binary(line_number, line, value_str, signed, bits=10)
+
+    return (
+        f'LOADIU {destination} {value[:5]}',
+        f'LOADIL {destination} {value[5:]}'  
     )
 
-    return (itertools.chain(*(assemble(m, m.split()) for m in output_mnemonics)))
+# Math operations
+
+'''
+6 - OC
+5 - N
+4 - Cin
+3 - BC
+2 - BZ
+1 - AC
+0 - AZ
+
+(A' + SOURCE)' = A - SOURCE     : AC, OC
+(A  + SOURCE')' = SOURCE - A    : BC, OC
+'''
+
+
+def pseudo_assemble_alu_op(line, tokens, line_number):
+    # ALUFSEO <option>
+
+    option = tokens[1]
+
+    match option:
+        case "ADD":
+            o = '0000000'
+        case "SUB":
+            o = '1000010'   # A - B
+        case "SUB_REV":
+            o = '1001000'   # B - A
+        case "NAND":
+            o = '0100000'
+        case "NOT":
+            o = '0100011'   # B'
+        case "NOT_A":
+            o = '0101100'   # A'
+        case _:
+            error(line_number, line, f'invalid option {option}')
+
+    return (f'ALUFSET {o}',)
+
+# TODO: normalise method signatures?
+def pseudo_assemble_loadmari(line, tokens, line_number):
+    # LOADMARI <20 bit address or :label>
+
+    if len(tokens) < 2 or len(tokens) > 3:
+        error(line_number, line, f'invalid {tokens[0]} syntax')
+
+    address = tokens[1]
+    if address.startswith(':'):
+        return (
+            f'>LOADIU A {address}_0_5',
+            f'>LOADIL A {address}_5_10',
+            'COPY A MARH',
+            f'>LOADIU A {address}_10_15',
+            f'>LOADIL A {address}_15_20',
+            'COPY A MARL',
+        )
+    else:
+        address_binary = generate_binary(line_number, line, tokens[1], signed=False, bits=20)
+
+        '''
+        MARH upper 0..4
+        MARH lower 5..9
+        MARL upper 10..14
+        MARL lower 14..19
+        '''
+        return (
+            f'LOADIU A {address_binary[:5]}',
+            f'LOADIL A {address_binary[5:10]}',
+            'COPY A MARH',
+            f'LOADIU A {address_binary[10:15]}',
+            f'LOADIL A {address_binary[15:]}',
+            'COPY A MARL',
+        )
+
+
+# Stack ops
+# TODO: add compiler protection
+
+def pseudo_assemble_stack_push(line, tokens, line_number):
+    # STACKPUSH <source>
+
+    source = tokens[1]
+        
+    return (
+        # update SP
+        'ALUFSET 0000011',     # AZ, AC -> 111... + B = B - 1 (Decrement SP)
+        'ALUEVAL SP',
+        'ALUSTORER SP',
+
+        # copy SP to MAR
+        'COPY SP MARL',                     # lower bits
+        'ALUFSET 0000111',                  # AZ, AC, BZ -> 111... + 0 = 111...(n-1) 
+        'ALUEVAL A',                        # does not matter
+        'ALUSTORER MARH',                   # upper bits
+
+        # store value to Stack
+        f'STORE {source}'
+    )
+
+def pseudo_assemble_stack_pop(line, tokens, line_number):
+    # STACKPOP <destination>
+
+    destination = tokens[1]
+
+    return (
+        # copy SP to MAR
+        'COPY SP MARL',                     # lower bits
+        'ALUFSET 0000111',                  # AZ, AC, BZ -> 111... + 0 = 111...(n-1)
+        'ALUEVAL A',                        # does not matter
+        'ALUSTORER MARH',                   # upper bits
+
+        # update SP
+        f'LOADIU {destination} 00000',      # temporarily use destination register for storing 1
+        f'LOADIL {destination} 00001',
+        f'ALUFSET 0000000',                 # SP + 1
+        'ALUEVAL SP',
+        'ALUSTORER SP',
+    
+        # load value
+        f'LOAD {destination}'
+    )
+
+def pseudo_assemble_call(line, tokens, line_number):
+    # CALL :label
+
+    address = tokens[1]
+
+    output = []
+
+    # back up A, B, C, D, address upper, lower to stack
+
+    # registers
+    for r in 'ABCD':
+        output += pseudo_assemble_stack_push(line, (None, r), line_number)
+
+    # address upper and lower
+    if address.startswith(':'):
+        output += [
+            f'>LOADIU A {address}_0_5',
+            f'>LOADIL A {address}_5_10',
+            'COPY A MARH',
+            f'>LOADIU B {address}_10_15',
+            f'>LOADIL B {address}_15_20',
+            'COPY B MARL',
+        ]
+    else:
+        address_binary = generate_binary(line_number, line, tokens[1], signed=False, bits=20)
+
+        '''
+        MARH upper 0..4
+        MARH lower 5..9
+        MARL upper 10..14
+        MARL lower 14..19
+        '''
+        output += [
+            f'LOADIU A {address_binary[:5]}',
+            f'LOADIL A {address_binary[5:10]}',
+            'COPY A MARH',
+            f'LOADIU B {address_binary[10:15]}',
+            f'LOADIL B {address_binary[15:]}',
+            'COPY B MARL',
+        ]
+
+    # upper and lower
+    for r in 'AB':
+        output += pseudo_assemble_stack_push(line, (None, r), line_number)
+     
+    # jump to address
+    output.append('JUMP 00')
+
+    
+    return output
+
+def pseudo_assemble_return(line, tokens, line_number):
+    # RETURN
+
+    output = []
+
+    # pop lower to B and upper to A
+    for r in 'BA':
+        output += pseudo_assemble_stack_pop(line, (None, r), line_number)
+    
+    # copy address to MAR
+    output += [
+        'COPY A MARH',
+        'COPY B MARL',
+    ]
+
+    # pop D, C, B, A
+    for r in 'DCBA':
+        output += pseudo_assemble_stack_pop(line, (None, r), line_number)
+
+    # jump to address
+    output.append('JUMP 00')
+    
+    return output
+
+# TODO: setup base interrupts address
+
+
+'''
+JUMP MODES:
+b1 b0   
+0   0   unconditional
+0   1   if zero
+1   0   if negative
+1   1   if carry 
+'''
+
+
+
+
+pseudo_jumps = {
+    'J'     : '00',
+    'JZ'    : '01',
+    'JN'    : '10',
+    'JC'    : '11',
+}
+
+def pseudo_assemble_jump(line, tokens, line_number):
+    # <pseudo jump option> :label
+    output = []
+
+    address = tokens[1]
+
+    if address.startswith(':'):
+        output += [
+            f'>LOADIU A {address}_0_5',
+            f'>LOADIL A {address}_5_10',
+            'COPY A MARH',
+            f'>LOADIU A {address}_10_15',
+            f'>LOADIL A {address}_15_20',
+            'COPY A MARL',
+        ]
+    else:
+        address_binary = generate_binary(line_number, line, tokens[1], signed=False, bits=20)
+
+        '''
+        MARH upper 0..4
+        MARH lower 5..9
+        MARL upper 10..14
+        MARL lower 14..19
+        '''
+        output += [
+            f'LOADIU A {address_binary[:5]}',
+            f'LOADIL A {address_binary[5:10]}',
+            'COPY A MARH',
+            f'LOADIU A {address_binary[10:15]}',
+            f'LOADIL A {address_binary[15:]}',
+            'COPY A MARL',
+        ]
+    
+    output.append(f'JUMP {pseudo_jumps[tokens[0]]}')
+
+    return output
 
 
 pseudo_instructions = {
-    'LOADI': pseudo_assemble_loadi,
-    'LOADI_UNSIGNED': pseudo_assemble_loadi_unsigned,
-    'ADD': pseudo_assemble_add
+    'LOADI'             : [pseudo_assemble_loadi,       3],
+    'LOADI_UNSIGNED'    : [pseudo_assemble_loadi,       3],
+    'ALUFSEO'           : [pseudo_assemble_alu_op,      2],
+    'LOADMARI'          : [pseudo_assemble_loadmari,    2],
+    'STACKPUSH'         : [pseudo_assemble_stack_push,  2],
+    'STACKPOP'          : [pseudo_assemble_stack_pop,   2],
+    'CALL'              : [pseudo_assemble_call,        2],
+    'RETURN'            : [pseudo_assemble_return,      1]
 }
 
+for pj in pseudo_jumps.keys():
+    pseudo_instructions[pj] = [pseudo_assemble_jump,    2] 
+
+
+isr_being_processed = False
+output = program_output
 for line in source_lines:
     line_number +=1
     line = line.strip()
@@ -330,38 +602,108 @@ for line in source_lines:
             multi_line_comment_block = False
         continue # Ignore comments and empty lines
 
+    if line.startswith(':'):
+        if not line[1:].isalpha():
+            error(line_number, line, f'invalid label "{line}". It MUST only be alphabetic')
+
+        if line[1:] == 'ISR':
+            # move all further lines to ISR address
+            isr_being_processed = True
+            output = isr_output
+            pass
+        
+        addr = len(output) + (ISR_ADDRESS if isr_being_processed else 0)
+        addr_binary = format(addr, 'b').zfill(20) # generate 20 bit address
+        label_addresses[line] = addr_binary
+        print(f'\033[35mLABEL  \t{line}\t{addr}\t{addr_binary}\033[0m')
+        continue # Ignore label
+
+
     tokens = line.split()
     instruction = tokens[0].upper()
     
     if instruction in instructions:
-        output += assemble(line, tokens, line_number)
+        output.append(assemble(line, tokens, line_number))
     elif instruction in pseudo_instructions:
+        # TODO: use placeholders for colours
         print('\033[33mPSEUDO  ', line.ljust(20), '\033[0m', sep='\t')
-        output += pseudo_instructions[instruction](line, tokens, line_number)
+
+        max_length = pseudo_instructions[instruction][1]
+        if max_length > -1 and len(tokens) != max_length:
+            error(line_number, line, f'invalid {tokens[0]} syntax')
+
+        output_mnemonics = pseudo_instructions[instruction][0](line, tokens, line_number)
+
+        for m in output_mnemonics:
+            if m[0] == '>':
+                print('\033[32mASSEMBLE LATER', m.ljust(20), '\033[0m', sep='\t')
+                # TODO: refactor this to separate to save space?
+                label_unassembled_lines.append((len(output), line_number, line, isr_being_processed))
+                output.append(m)
+            else:
+                output.append(assemble(m, m.split(), None))
+
     else:
         error(line_number, line, f'"{instruction}" is not a valid instruction')
         exit(1)
 
-    # output_instructions are already in hex
+if len(label_unassembled_lines) > 0:
+    print('resolve labels ...')
 
-    # output += [format(int(i, 2), 'X') for i in output_instructions]
+# post process label_addresses
+for l in label_unassembled_lines:
+    line_number, original_line_number, original_line, is_isr = l
+
+    output = isr_output if is_isr else program_output
+
+    line = output[line_number][1:]  # remove leading '>'
+
+    # f'>LOADIU A {address}_0_5',
+
+    for token in line.split():
+        if '_' in token:
+            break
+    
+    label, start_index, stop_index = token.split('_')
+
+    if label not in label_addresses:
+        error(original_line_number, original_line, f'unable to resolve label {label}')
+
+    line = line.replace(token, label_addresses[label][int(start_index):int(stop_index)])
+    
+    output[line_number] = assemble(line, line.split())
+
 
 # generate output
 output_file = open(output_file_name, 'w')
 output_lines = ['v3.0 hex words addressed\n']
 
 output_index = 0
-
-for i in range(math.ceil(len(output) / 16)):
+word_index = 0
+output = program_output
+is_isr = False
+for i in range((2**20) // 16):
     line_number_str = format(i*16, 'x');
     output_line = line_number_str.zfill(5) + ':'
+
+
+    if not is_isr and output_index >= len(output):
+        is_isr = True
+        output_index = 0
+        output = isr_output
+    
+    if is_isr and output_index >= len(output):
+        break
     
     for j in range(16):
-        if output_index >= len(output):
+        if output_index >= len(output) or (is_isr and word_index < ISR_ADDRESS):
             output_line += ' 000'
         else:
             output_line += ' ' + output[output_index].zfill(3)
             output_index += 1
+        pass
+        
+        word_index+=1
     
     output_lines.append(output_line + '\n')
 

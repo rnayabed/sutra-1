@@ -1,0 +1,27 @@
+// Dot
+
+/*
+Simple pseudocode
+
+if LEFT, column --
+if RIGHT, column --
+
+if UP:
+
+row_data = row_data << 1
+
+if row_data == 0100000000:
+    row_data = 0000000001
+    row_bank++
+
+if DOWN:
+
+row_data = row_data >> 1
+if row_data == 0:
+    row_data = 0010000000
+    row_bank--
+
+*/
+
+
+# DEFINE COLUMN_INDEX_ADDRESS  

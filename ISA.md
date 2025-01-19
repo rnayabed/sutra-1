@@ -1,3 +1,22 @@
+WHY DOES IT WORK???
+stuff i did:
+1. sync counter enable is triggered in decode, not fetch mode
+    this caused first instruction to be missed. investigate why
+2. flags always on even when low clock (check if this is even needed)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Instruction Set Architecture
 
 ISA for the Sutra-1
@@ -226,15 +245,74 @@ ILOCKSET[9]     <BIT>
 
 ## Machine Cycle
 
+(MACHINE CYCLE)
+
 (HIGH)
+#1 high     PC OUT
+            MEM OUT
+            IR IN
+
+#1 low      PC OUT
+            MEM OUT
+            IR IN
+
+#2 high     control flags based on IR
+            PC enable (incr/load) if not HLT
+
+#2 low      control flags based on IR
+            PC enable (incr/load) if not HLT
+
+
+<!-- timeline:
+#1 low      incremented PC is selected (1)
+#1 high     nothing changes (0 control flags), PC is to be loaded next falling edge
+#2 low      PC is loaded
+#2 high     nothing changes, PC set to increase next falling edge, control logic changes to take effect next falling edge
+ -->
+
+
+new timeline if rising edge triggered?
+#1 low      PC OUT, MEM OUT, IR IN (change to next next rising edge), PC to be incremented next rising edge
+#1 high     changes from prev
+#2 low      
+#2 high     PC is incremented
+
+
+#1 low      PC OUT, MEM OUT, IR IN,    PC enable            0   0
+#1 high     changes                     PC enable           1   U
+#2 low      decode                                          1   U                
+#2 high     changes                
+
+#1 = decode
+#2 = fetch
+
+
+CLK     MACHINE CYCLE
+low     #2                  PC OUT, MEM IN, IR IN, IR will be incremented next step! (CLK 0, EN 1)      (CLK 0, EN 0)
+high    #1                  IR loaded, decode                                        (CLK 1, EN 0)      (CLK 1, EN 0)
+low     #1                  decoded, IR will be incremented next step                (CLK 0, EN 0)
+high    #2                  IR incremented & PC OUT, MEM IN, IR IN                   (CLK 1, EN 1)
+low     #2                  PC OUT, MEM IN, IR IN                                    (CLK 0, EN 1)
+high    #1
+low     #1
+
+
+work:
+fix JK FF (use D ltches instead of SR)
+fix sync counter
+
+
+
+<!-- (HIGH)
 #1 high     fetch & decode
-            PC OUT, MEMORY OUT, IR IN
+            PC OUT, MEMORY OUT, IR IN, 
             #29, #31
 
 (LOW)
-#2 high     execute
-            run flags based on IR value (control logic)
+#2 high     control flags
             PC increment if not HLT
+
+#2 low      control flags -->
 
 ## Instructions - Machine cycles
 

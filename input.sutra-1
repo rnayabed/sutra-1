@@ -1,26 +1,14 @@
-//# DEFINE MY_NUMNER 420
-// LOADIL A 00100
-// LOADIU A 01101
-//LOADI A MY_NUMNER
+LOADI B 1
+LOADI C 1
+:loop
+COPY C A
+ALUFSEO ADD
+ALUEVAL B
+ALUSTORER C
+J :loop
+HALT
 
-/*
-ALU flags:
-6 - output compliment
-5 - NAND
-4 - Carry in
-3 - B compliment
-2 - B zero
-1 - A compliment
-0 - A zero
-*/
-
-LOADI A 420
+:ISR
+ILOCKSET 1
 LOADI B 69
-//ALUFSET 0000000
-//ALUEVAL B
-//ALUSTORER C
-ADD B C
-COPY C D
-OUT D
-
 HALT
