@@ -255,11 +255,12 @@ def assemble(line, tokens, line_number=None):
     if len(output_instruction) != 10:
         error(line_number, line, f'resultant assembled instruction {output_instruction} does not match standard length')
 
-    hex_ = format(int(output_instruction, 2), 'X')
+    hex_ = format(int(output_instruction, 2), 'X').zfill(3)
     print(output_instruction, hex_ + '\033[0m', sep='\t')
 
     return hex_
 
+# TODO: add comments that end with //
 # Helper funcs
 
 def generate_binary(line_number, line, value_str, signed, bits):
@@ -289,7 +290,7 @@ def generate_binary(line_number, line, value_str, signed, bits):
                 value = format(int(value, 2) + 1, 'b')
         else:
             max_value = 2**(bits) - 1;
-            if value_int < 0 or value_int > 1023:
+            if value_int < 0 or value_int > max_value:
                 error(line_number, line, f'invalid integer {value_str} - range must be between 0 and {max_value} (inclusive)')
 
             value = format(abs(value_int), 'b').zfill(bits)           
@@ -301,7 +302,7 @@ def generate_binary(line_number, line, value_str, signed, bits):
 
 # Pseudo assemble: mnemonic -> another mnemonic
 
-def pseudo_assemble_loadi(line, tokens, line_number):
+def pseudo_assemble_loadi(line, tokens, line_number, **kwargs):
     # LOADI <destination:2> <value>
 
     signed = tokens[0] != 'LOADI_UNSIGNED'
@@ -332,8 +333,8 @@ def pseudo_assemble_loadi(line, tokens, line_number):
 '''
 
 
-def pseudo_assemble_alu_op(line, tokens, line_number):
-    # ALUFSEO <option>
+def pseudo_assemble_alu_op(line, tokens, line_number, **kwargs):
+    # ALUFSETO <option>
 
     option = tokens[1]
 
@@ -356,11 +357,8 @@ def pseudo_assemble_alu_op(line, tokens, line_number):
     return (f'ALUFSET {o}',)
 
 # TODO: normalise method signatures?
-def pseudo_assemble_loadmari(line, tokens, line_number):
+def pseudo_assemble_loadmari(line, tokens, line_number, **kwargs):
     # LOADMARI <20 bit address or :label>
-
-    if len(tokens) < 2 or len(tokens) > 3:
-        error(line_number, line, f'invalid {tokens[0]} syntax')
 
     address = tokens[1]
     if address.startswith(':'):
@@ -394,7 +392,7 @@ def pseudo_assemble_loadmari(line, tokens, line_number):
 # Stack ops
 # TODO: add compiler protection
 
-def pseudo_assemble_stack_push(line, tokens, line_number):
+def pseudo_assemble_stack_push(line, tokens, line_number, **kwargs):
     # STACKPUSH <source>
 
     source = tokens[1]
@@ -415,30 +413,39 @@ def pseudo_assemble_stack_push(line, tokens, line_number):
         f'STORE {source}'
     )
 
-def pseudo_assemble_stack_pop(line, tokens, line_number):
+def pseudo_assemble_stack_pop(line, tokens, line_number, **kwargs):
     # STACKPOP <destination>
 
     destination = tokens[1]
 
-    return (
+    output = [
         # copy SP to MAR
         'COPY SP MARL',                     # lower bits
         'ALUFSET 0000111',                  # AZ, AC, BZ -> 111... + 0 = 111...(n-1)
         'ALUEVAL A',                        # does not matter
         'ALUSTORER MARH',                   # upper bits
+    ]
 
+    if destination != 'A':
+        output.append(f'COPY A {destination}')
+
+    output += [
         # update SP
-        f'LOADIU {destination} 00000',      # temporarily use destination register for storing 1
-        f'LOADIL {destination} 00001',
+        f'LOADIU A 00000',      # temporarily use destination register for storing 1
+        f'LOADIL A 00001',
         f'ALUFSET 0000000',                 # SP + 1
         'ALUEVAL SP',
         'ALUSTORER SP',
-    
-        # load value
-        f'LOAD {destination}'
-    )
+    ]
 
-def pseudo_assemble_call(line, tokens, line_number):
+    if destination != 'A':
+        output.append(f'COPY {destination} A')
+    
+    output.append(f'LOAD {destination}')
+
+    return output
+
+def pseudo_assemble_call(line, tokens, line_number, **kwargs):
     # CALL :label
 
     address = tokens[1]
@@ -451,45 +458,55 @@ def pseudo_assemble_call(line, tokens, line_number):
     for r in 'ABCD':
         output += pseudo_assemble_stack_push(line, (None, r), line_number)
 
-    # address upper and lower
-    if address.startswith(':'):
-        output += [
-            f'>LOADIU A {address}_0_5',
-            f'>LOADIL A {address}_5_10',
-            'COPY A MARH',
-            f'>LOADIU B {address}_10_15',
-            f'>LOADIL B {address}_15_20',
-            'COPY B MARL',
-        ]
-    else:
-        address_binary = generate_binary(line_number, line, tokens[1], signed=False, bits=20)
+    # copy current address
+    # output += pseudo_assemble_loadmari(line, (None, str(kwargs['current_ins_address'])), line_number)
 
-        '''
-        MARH upper 0..4
-        MARH lower 5..9
-        MARL upper 10..14
-        MARL lower 14..19
-        '''
-        output += [
-            f'LOADIU A {address_binary[:5]}',
-            f'LOADIL A {address_binary[5:10]}',
-            'COPY A MARH',
-            f'LOADIU B {address_binary[10:15]}',
-            f'LOADIL B {address_binary[15:]}',
-            'COPY B MARL',
-        ]
 
+    # copy current address
+    current_ins_address = kwargs['current_ins_address']
+    
+    return_address=f':INTERNAL{current_ins_address}'
+
+    '''
+    MARH upper 0..4
+    MARH lower 5..9
+    MARL upper 10..14
+    MARL lower 14..19
+    '''
+    output += [
+        f'>LOADIU A {return_address}_0_5',
+        f'>LOADIL A {return_address}_5_10',
+        'COPY A MARH',
+        f'>LOADIU B {return_address}_10_15',
+        f'>LOADIL B {return_address}_15_20',
+        'COPY B MARL',
+    ]
+
+    
     # upper and lower
     for r in 'AB':
         output += pseudo_assemble_stack_push(line, (None, r), line_number)
-     
-    # jump to address
-    output.append('JUMP 00')
 
+    output += pseudo_assemble_jump(line, ('J', address), line_number)
+     
+    # # jump to address
+    # output.append('JUMP 00')
+
+    print('out', '\n'.join(output))
+    print('extra len', len(output), current_ins_address + len(output))
+    label_addresses[return_address] = address_binary = format(current_ins_address + len(output), 'b').zfill(20)
+
+
+
+
+    # executed after RETURN
+    # pop D, C, B, A
+    for r in 'DCBA':
+        output += pseudo_assemble_stack_pop(line, (None, r), line_number)
     
     return output
 
-def pseudo_assemble_return(line, tokens, line_number):
+def pseudo_assemble_return(line, tokens, line_number, **kwargs):
     # RETURN
 
     output = []
@@ -503,11 +520,7 @@ def pseudo_assemble_return(line, tokens, line_number):
         'COPY A MARH',
         'COPY B MARL',
     ]
-
-    # pop D, C, B, A
-    for r in 'DCBA':
-        output += pseudo_assemble_stack_pop(line, (None, r), line_number)
-
+    
     # jump to address
     output.append('JUMP 00')
     
@@ -527,7 +540,6 @@ b1 b0
 
 
 
-
 pseudo_jumps = {
     'J'     : '00',
     'JZ'    : '01',
@@ -535,7 +547,7 @@ pseudo_jumps = {
     'JC'    : '11',
 }
 
-def pseudo_assemble_jump(line, tokens, line_number):
+def pseudo_assemble_jump(line, tokens, line_number, **kwargs):
     # <pseudo jump option> :label
     output = []
 
@@ -576,7 +588,7 @@ def pseudo_assemble_jump(line, tokens, line_number):
 pseudo_instructions = {
     'LOADI'             : [pseudo_assemble_loadi,       3],
     'LOADI_UNSIGNED'    : [pseudo_assemble_loadi,       3],
-    'ALUFSEO'           : [pseudo_assemble_alu_op,      2],
+    'ALUFSETO'           :[pseudo_assemble_alu_op,      2],
     'LOADMARI'          : [pseudo_assemble_loadmari,    2],
     'STACKPUSH'         : [pseudo_assemble_stack_push,  2],
     'STACKPOP'          : [pseudo_assemble_stack_pop,   2],
@@ -602,8 +614,11 @@ for line in source_lines:
             multi_line_comment_block = False
         continue # Ignore comments and empty lines
 
+
+    current_ins_address = len(output) + (ISR_ADDRESS if isr_being_processed else 0)
+
     if line.startswith(':'):
-        if not line[1:].isalpha():
+        if not line[1:].isalnum():
             error(line_number, line, f'invalid label "{line}". It MUST only be alphabetic')
 
         if line[1:] == 'ISR':
@@ -612,10 +627,9 @@ for line in source_lines:
             output = isr_output
             pass
         
-        addr = len(output) + (ISR_ADDRESS if isr_being_processed else 0)
-        addr_binary = format(addr, 'b').zfill(20) # generate 20 bit address
+        addr_binary = format(current_ins_address, 'b').zfill(20) # generate 20 bit address
         label_addresses[line] = addr_binary
-        print(f'\033[35mLABEL  \t{line}\t{addr}\t{addr_binary}\033[0m')
+        print(f'\033[35mLABEL  \t{line}\t{current_ins_address}\t{addr_binary}\033[0m')
         continue # Ignore label
 
 
@@ -632,7 +646,7 @@ for line in source_lines:
         if max_length > -1 and len(tokens) != max_length:
             error(line_number, line, f'invalid {tokens[0]} syntax')
 
-        output_mnemonics = pseudo_instructions[instruction][0](line, tokens, line_number)
+        output_mnemonics = pseudo_instructions[instruction][0](line, tokens, line_number, current_ins_address=current_ins_address)
 
         for m in output_mnemonics:
             if m[0] == '>':
@@ -673,6 +687,7 @@ for l in label_unassembled_lines:
     
     output[line_number] = assemble(line, line.split())
 
+#TODO: handle case different instructions properly
 
 # generate output
 output_file = open(output_file_name, 'w')
@@ -699,7 +714,7 @@ for i in range((2**20) // 16):
         if output_index >= len(output) or (is_isr and word_index < ISR_ADDRESS):
             output_line += ' 000'
         else:
-            output_line += ' ' + output[output_index].zfill(3)
+            output_line += ' ' + output[output_index]
             output_index += 1
         pass
         

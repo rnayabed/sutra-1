@@ -954,8 +954,8 @@
     </comp>
     <comp lib="0" loc="(440,1300)" name="Splitter">
       <a name="facing" val="south"/>
-      <a name="fanout" val="4"/>
-      <a name="incoming" val="4"/>
+      <a name="fanout" val="5"/>
+      <a name="incoming" val="5"/>
     </comp>
     <comp lib="0" loc="(4420,3000)" name="Splitter">
       <a name="facing" val="south"/>
@@ -1219,13 +1219,15 @@
     <comp lib="1" loc="(830,2000)" name="Controlled Buffer"/>
     <comp lib="1" loc="(830,2070)" name="Controlled Buffer"/>
     <comp lib="1" loc="(830,2090)" name="Controlled Buffer"/>
+    <comp lib="1" loc="(840,2150)" name="Controlled Buffer"/>
+    <comp lib="1" loc="(840,2170)" name="Controlled Buffer"/>
     <comp lib="4" loc="(4040,1480)" name="RAM">
       <a name="addrWidth" val="20"/>
       <a name="appearance" val="logisim_evolution"/>
       <a name="dataWidth" val="10"/>
       <a name="databus" val="bidir"/>
       <a name="enables" val="line"/>
-      <a name="trigger" val="low"/>
+      <a name="trigger" val="high"/>
       <a name="type" val="nonvolatile"/>
     </comp>
     <comp lib="5" loc="(2430,980)" name="7-Segment Display"/>
@@ -1434,7 +1436,7 @@
     <comp loc="(710,1880)" name="Buffer10">
       <a name="label" val="COPY_R_OR_ALUSTOREF_R_OR_ALUSTORER_R_OR_LOAD"/>
     </comp>
-    <comp loc="(720,1300)" name="Or4"/>
+    <comp loc="(720,1300)" name="Or5"/>
     <wire from="(1010,2130)" to="(1070,2130)"/>
     <wire from="(1050,2090)" to="(1070,2090)"/>
     <wire from="(1070,2290)" to="(1070,2490)"/>
@@ -2016,7 +2018,11 @@
     <wire from="(2970,1890)" to="(2970,2000)"/>
     <wire from="(2980,570)" to="(2980,750)"/>
     <wire from="(2980,750)" to="(3010,750)"/>
-    <wire from="(300,2010)" to="(300,3340)"/>
+    <wire from="(300,1350)" to="(300,2010)"/>
+    <wire from="(300,1350)" to="(490,1350)"/>
+    <wire from="(300,2010)" to="(300,2210)"/>
+    <wire from="(300,2210)" to="(300,3340)"/>
+    <wire from="(300,2210)" to="(830,2210)"/>
     <wire from="(300,3340)" to="(3840,3340)"/>
     <wire from="(3000,1950)" to="(3000,2050)"/>
     <wire from="(3000,2050)" to="(3030,2050)"/>
@@ -2837,6 +2843,7 @@
     <wire from="(4890,2840)" to="(4890,2890)"/>
     <wire from="(4890,2840)" to="(4900,2840)"/>
     <wire from="(4890,2890)" to="(4940,2890)"/>
+    <wire from="(490,1320)" to="(490,1350)"/>
     <wire from="(4920,1280)" to="(4930,1280)"/>
     <wire from="(4930,1280)" to="(4930,1290)"/>
     <wire from="(4930,2930)" to="(4940,2930)"/>
@@ -2977,7 +2984,9 @@
     <wire from="(770,1850)" to="(830,1850)"/>
     <wire from="(770,1960)" to="(770,2050)"/>
     <wire from="(770,1960)" to="(840,1960)"/>
+    <wire from="(770,2050)" to="(770,2130)"/>
     <wire from="(770,2050)" to="(840,2050)"/>
+    <wire from="(770,2130)" to="(850,2130)"/>
     <wire from="(790,1470)" to="(790,1480)"/>
     <wire from="(790,1470)" to="(810,1470)"/>
     <wire from="(790,1530)" to="(790,1580)"/>
@@ -2992,12 +3001,17 @@
     <wire from="(800,2000)" to="(810,2000)"/>
     <wire from="(800,2070)" to="(800,2090)"/>
     <wire from="(800,2070)" to="(810,2070)"/>
+    <wire from="(800,2090)" to="(800,2150)"/>
     <wire from="(800,2090)" to="(810,2090)"/>
+    <wire from="(800,2150)" to="(810,2150)"/>
     <wire from="(800,560)" to="(1220,560)"/>
     <wire from="(800,560)" to="(800,870)"/>
     <wire from="(800,870)" to="(840,870)"/>
     <wire from="(810,1880)" to="(810,1900)"/>
     <wire from="(810,1900)" to="(810,1940)"/>
+    <wire from="(810,2150)" to="(810,2170)"/>
+    <wire from="(810,2150)" to="(820,2150)"/>
+    <wire from="(810,2170)" to="(820,2170)"/>
     <wire from="(820,1390)" to="(820,1400)"/>
     <wire from="(820,1390)" to="(880,1390)"/>
     <wire from="(820,1480)" to="(820,1530)"/>
@@ -3016,20 +3030,26 @@
     <wire from="(830,2000)" to="(860,2000)"/>
     <wire from="(830,2070)" to="(840,2070)"/>
     <wire from="(830,2090)" to="(860,2090)"/>
+    <wire from="(830,2160)" to="(830,2180)"/>
+    <wire from="(830,2180)" to="(830,2210)"/>
     <wire from="(830,830)" to="(880,830)"/>
     <wire from="(840,1420)" to="(840,1680)"/>
     <wire from="(840,1770)" to="(840,1790)"/>
     <wire from="(840,1960)" to="(840,1980)"/>
     <wire from="(840,2050)" to="(840,2070)"/>
+    <wire from="(840,2150)" to="(850,2150)"/>
+    <wire from="(840,2170)" to="(860,2170)"/>
     <wire from="(840,850)" to="(840,870)"/>
     <wire from="(850,1420)" to="(850,1670)"/>
     <wire from="(850,1770)" to="(850,1780)"/>
+    <wire from="(850,2130)" to="(850,2150)"/>
     <wire from="(850,850)" to="(850,880)"/>
     <wire from="(860,1340)" to="(860,1570)"/>
     <wire from="(860,1340)" to="(880,1340)"/>
     <wire from="(860,1570)" to="(860,1890)"/>
     <wire from="(860,1890)" to="(860,2000)"/>
     <wire from="(860,2000)" to="(860,2090)"/>
+    <wire from="(860,2090)" to="(860,2170)"/>
     <wire from="(860,850)" to="(860,870)"/>
     <wire from="(860,870)" to="(1240,870)"/>
     <wire from="(880,1360)" to="(880,1390)"/>
@@ -10511,18 +10531,18 @@
     <a name="simulationFrequency" val="1.0"/>
     <appear>
       <rect height="4" stroke="none" width="10" x="50" y="58"/>
-      <text dominant-baseline="alphabetic" fill="#404040" font-family="Courier 10 Pitch" font-size="12" text-anchor="start" x="65" y="64">ROW_BANK_...</text>
+      <text dominant-baseline="alphabetic" fill="#404040" font-family="Dialog" font-size="12" text-anchor="start" x="65" y="64">ROW_BANK_...</text>
       <rect height="4" stroke="none" width="10" x="50" y="78"/>
-      <text dominant-baseline="alphabetic" fill="#404040" font-family="Courier 10 Pitch" font-size="12" text-anchor="start" x="65" y="84">ROW_BANK</text>
+      <text dominant-baseline="alphabetic" fill="#404040" font-family="Dialog" font-size="12" text-anchor="start" x="65" y="84">ROW_BANK</text>
       <rect height="3" stroke="none" width="10" x="50" y="99"/>
-      <text dominant-baseline="alphabetic" fill="#404040" font-family="Courier 10 Pitch" font-size="12" text-anchor="start" x="65" y="104">WRITE_ENABLE</text>
+      <text dominant-baseline="alphabetic" fill="#404040" font-family="Dialog" font-size="12" text-anchor="start" x="65" y="104">WRITE_ENABLE</text>
       <rect height="3" stroke="none" width="10" x="50" y="119"/>
-      <text dominant-baseline="alphabetic" fill="#404040" font-family="Courier 10 Pitch" font-size="12" text-anchor="start" x="65" y="124">CLK</text>
+      <text dominant-baseline="alphabetic" fill="#404040" font-family="Dialog" font-size="12" text-anchor="start" x="65" y="124">CLK</text>
       <rect height="4" stroke="none" width="10" x="260" y="58"/>
-      <text dominant-baseline="alphabetic" fill="#404040" font-family="Courier 10 Pitch" font-size="12" text-anchor="end" x="255" y="64">O</text>
+      <text dominant-baseline="alphabetic" fill="#404040" font-family="Dialog" font-size="12" text-anchor="end" x="255" y="64">O</text>
       <rect height="20" stroke="none" width="200" x="60" y="130"/>
       <rect fill="none" height="100" stroke="#000000" stroke-width="2" width="200" x="60" y="50"/>
-      <text dominant-baseline="alphabetic" fill="#ffffff" font-family="Courier 10 Pitch" font-size="14" font-weight="bold" text-anchor="middle" x="160" y="144">ScreenColumnUnit</text>
+      <text dominant-baseline="alphabetic" fill="#ffffff" font-family="Dialog" font-size="14" font-weight="bold" text-anchor="middle" x="160" y="144">ScreenColumnUnit</text>
       <circ-anchor facing="east" x="270" y="60"/>
       <circ-port dir="in" pin="1320,1000" x="50" y="120"/>
       <circ-port dir="in" pin="1320,910" x="50" y="60"/>

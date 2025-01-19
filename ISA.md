@@ -409,3 +409,9 @@ Does #37 need to go?
 ## Program Counter 
 
 Clk is just disabled if HALT is encountered
+
+# screen
+
+select row and column   01<row bank:2><column index>
+row data                10<data:8>
+load buffer             1100000000
