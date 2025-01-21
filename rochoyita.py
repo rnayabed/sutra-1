@@ -796,4 +796,3 @@ for i in range((2**20) // 16):
 
 output_file.writelines(output_lines)
 output_file.close()
-print('done')
