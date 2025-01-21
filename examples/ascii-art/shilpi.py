@@ -11,7 +11,7 @@ import argparse
 
 # handle args
 parser = argparse.ArgumentParser(
-    prog='shilpo',
+    prog='shilpi',
     description='Simple pixel drawer from the Sutra-1 System',
     epilog='Copyright (C) 2025 Debayan "rnayabed" Sutradhar'
 )

@@ -1279,8 +1279,10 @@
     <comp lib="5" loc="(4110,1060)" name="7-Segment Display"/>
     <comp lib="5" loc="(4170,1060)" name="7-Segment Display"/>
     <comp lib="5" loc="(5340,2710)" name="DotMatrix">
+      <a name="color" val="#ffca2b"/>
       <a name="matrixcols" val="64"/>
       <a name="matrixrows" val="32"/>
+      <a name="offcolor" val="#000000"/>
     </comp>
     <comp lib="5" loc="(5530,2880)" name="Button">
       <a name="facing" val="south"/>
@@ -1321,7 +1323,7 @@
       <a name="text" val="MEMORY"/>
     </comp>
     <comp lib="8" loc="(5640,2920)" name="Text">
-      <a name="text" val="INTERRUPT"/>
+      <a name="text" val="INTERRUPT LINES"/>
     </comp>
     <comp lib="9" loc="(2430,980)" name="BCD_to_7_Segment_decoder"/>
     <comp lib="9" loc="(2440,1080)" name="Binary_to_BCD_converter">
@@ -3116,69 +3118,6 @@
     <wire from="(880,1360)" to="(880,1390)"/>
     <wire from="(880,1390)" to="(880,1750)"/>
     <wire from="(930,2490)" to="(1070,2490)"/>
-  </circuit>
-  <circuit name="SRLatch">
-    <a name="appearance" val="logisim_evolution"/>
-    <a name="circuit" val="SRLatch"/>
-    <a name="circuitnamedboxfixedsize" val="true"/>
-    <a name="simulationFrequency" val="1.0"/>
-    <comp lib="0" loc="(200,410)" name="Pin">
-      <a name="appearance" val="NewPins"/>
-      <a name="label" val="SB"/>
-    </comp>
-    <comp lib="0" loc="(320,320)" name="Pin">
-      <a name="appearance" val="NewPins"/>
-      <a name="label" val="E"/>
-    </comp>
-    <comp lib="0" loc="(330,280)" name="Pin">
-      <a name="appearance" val="NewPins"/>
-      <a name="label" val="S"/>
-    </comp>
-    <comp lib="0" loc="(340,490)" name="Pin">
-      <a name="appearance" val="NewPins"/>
-      <a name="label" val="R"/>
-    </comp>
-    <comp lib="0" loc="(870,320)" name="Pin">
-      <a name="appearance" val="NewPins"/>
-      <a name="facing" val="west"/>
-      <a name="label" val="O"/>
-      <a name="output" val="true"/>
-    </comp>
-    <comp lib="0" loc="(870,410)" name="Pin">
-      <a name="appearance" val="NewPins"/>
-      <a name="facing" val="west"/>
-      <a name="label" val="OC"/>
-      <a name="output" val="true"/>
-    </comp>
-    <comp lib="1" loc="(540,470)" name="NAND Gate"/>
-    <comp lib="1" loc="(550,300)" name="NAND Gate"/>
-    <comp lib="1" loc="(780,320)" name="NAND Gate"/>
-    <comp lib="1" loc="(780,410)" name="NAND Gate">
-      <a name="inputs" val="3"/>
-    </comp>
-    <wire from="(200,410)" to="(720,410)"/>
-    <wire from="(320,320)" to="(440,320)"/>
-    <wire from="(330,280)" to="(490,280)"/>
-    <wire from="(340,490)" to="(480,490)"/>
-    <wire from="(440,320)" to="(440,450)"/>
-    <wire from="(440,320)" to="(490,320)"/>
-    <wire from="(440,450)" to="(480,450)"/>
-    <wire from="(540,470)" to="(610,470)"/>
-    <wire from="(550,300)" to="(720,300)"/>
-    <wire from="(610,430)" to="(610,470)"/>
-    <wire from="(610,430)" to="(720,430)"/>
-    <wire from="(710,340)" to="(710,360)"/>
-    <wire from="(710,340)" to="(720,340)"/>
-    <wire from="(710,360)" to="(820,360)"/>
-    <wire from="(710,370)" to="(710,390)"/>
-    <wire from="(710,370)" to="(810,370)"/>
-    <wire from="(710,390)" to="(720,390)"/>
-    <wire from="(780,320)" to="(810,320)"/>
-    <wire from="(780,410)" to="(820,410)"/>
-    <wire from="(810,320)" to="(810,370)"/>
-    <wire from="(810,320)" to="(870,320)"/>
-    <wire from="(820,360)" to="(820,410)"/>
-    <wire from="(820,410)" to="(870,410)"/>
   </circuit>
   <circuit name="DLatch">
     <a name="appearance" val="logisim_evolution"/>

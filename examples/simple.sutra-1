@@ -1,6 +1,6 @@
 // Add 2 numbers
 
-LOADI A 1
+LOADI A 3
 LOADI B 5
 ALUFSETO ADD
 ALUEVAL B

@@ -73,6 +73,12 @@ instructions = {
             Operand(OperandType.DATA,           7),
         )
     ),
+    'ALUFSETR'   : Instruction(
+        '10100100',
+        (
+            Operand(OperandType.SOURCE,         2),
+        )
+    ),
     'ALUEVAL'   : Instruction(
         '1000000',
         (
@@ -91,6 +97,12 @@ instructions = {
             Operand(OperandType.DESTINATION,    3),
         )
     ),
+    'AOP'      : Instruction(
+        '10010100',
+        (
+            Operand(OperandType.DATA,           2),
+        )
+    ),
     'STORE'     : Instruction(
         '1000110',
         (
@@ -101,12 +113,6 @@ instructions = {
         '1001000',
         (
             Operand(OperandType.DESTINATION,    3),
-        )
-    ),
-    'AOP'      : Instruction(
-        '10010100',
-        (
-            Operand(OperandType.DATA,           2),
         )
     ),
     'JUMP'      : Instruction(
@@ -127,20 +133,14 @@ instructions = {
             Operand(OperandType.DATA,           4),
         )
     ),
-    'ALUFSETR'   : Instruction(
-        '10100100',
-        (
-            Operand(OperandType.SOURCE,         2),
-        )
-    ),
-    'NOOP'      : Instruction('0000000000'),
-    'HALT'      : Instruction('1111111111'),
     'ILOCKSET'  : Instruction(
         '101010000',
         (
             Operand(OperandType.DATA,           1),
         )
-    )
+    ),
+    'NOOP'      : Instruction('0000000000'),
+    'HALT'      : Instruction('1111111111')
 }
 destination_registers = ('A', 'B', 'C', 'D', 'SP', 'IMR', 'MARL', 'MARH')
 source_registers = ('A', 'B', 'C', 'D', 'SP', 'IMR', 'ISR')
@@ -401,6 +401,7 @@ def pseudo_assemble_stack_push(line, tokens, line_number, **kwargs):
         
     return (
         # update SP
+        'ALUFSETO ADD',
         'ALUFSET 0000011',     # AZ, AC -> 111... + B = B - 1 (Decrement SP)
         'ALUEVAL SP',
         'ALUSTORER SP',
@@ -423,6 +424,7 @@ def pseudo_assemble_stack_pop(line, tokens, line_number, **kwargs):
     output = [
         # copy SP to MAR
         'COPY SP MARL',                     # lower bits
+        'ALUFSETO ADD',
         'ALUFSET 0000111',                  # AZ, AC, BZ -> 111... + 0 = 111...(n-1)
         'ALUEVAL A',                        # does not matter
         'ALUSTORER MARH',                   # upper bits
@@ -585,16 +587,9 @@ S1  S2
 B9  B10
 I1  I0
 
-0   0   Shift left          A
-0   1   Shift right         B
-1   0   Load                C
-1   1   Clear               D
-
-
-new:
 0   0   Nothing
-1   0   Shift left
 0   1   Shift right
+1   0   Shift left
 1   1   Load            divide clocks here based on Low/high bits
 
 TODO: check if its worth without killing clock in A
@@ -620,19 +615,19 @@ def pseudo_assemble_a_op(line, tokens, line_number, **kwargs):
 
 # TODO: -1 from here and handle that in the checker
 pseudo_instructions = {
-    'LOADI'             : [pseudo_assemble_loadi,       3],
-    'LOADI_SIGNED'      : [pseudo_assemble_loadi,       3],
-    'ALUFSETO'          : [pseudo_assemble_alu_op,      2],
-    'LOADMARI'          : [pseudo_assemble_loadmari,    2],
-    'STACKPUSH'         : [pseudo_assemble_stack_push,  2],
-    'STACKPOP'          : [pseudo_assemble_stack_pop,   2],
-    'CALL'              : [pseudo_assemble_call,        2],
-    'RETURN'            : [pseudo_assemble_return,      1],
-    'AOPT'              : [pseudo_assemble_a_op,        2]
+    'LOADI'             : [pseudo_assemble_loadi,       2],
+    'LOADI_SIGNED'      : [pseudo_assemble_loadi,       2],
+    'ALUFSETO'          : [pseudo_assemble_alu_op,      1],
+    'LOADMARI'          : [pseudo_assemble_loadmari,    1],
+    'STACKPUSH'         : [pseudo_assemble_stack_push,  1],
+    'STACKPOP'          : [pseudo_assemble_stack_pop,   1],
+    'CALL'              : [pseudo_assemble_call,        1],
+    'RETURN'            : [pseudo_assemble_return,      0],
+    'AOPT'              : [pseudo_assemble_a_op,        1]
 }
 
 for pj in pseudo_jumps.keys():
-    pseudo_instructions[pj] = [pseudo_assemble_jump,    2] 
+    pseudo_instructions[pj] = [pseudo_assemble_jump,    1] 
 
 
 isr_being_processed = False
@@ -681,8 +676,8 @@ for line in source_lines:
         # TODO: use constants for these magic numbers
         print('\033[33mPSEUDO'.ljust(15), line.ljust(20), '\033[0m', sep='\t')
 
-        max_length = pseudo_instructions[instruction][1]
-        if max_length > -1 and len(tokens) != max_length:
+        max_length = pseudo_instructions[instruction][1] + 1
+        if len(tokens) != max_length:
             error(line_number, line, f'invalid {tokens[0]} syntax')
 
         output_mnemonics = pseudo_instructions[instruction][0](line, tokens, line_number, current_ins_address=current_ins_address)
@@ -764,35 +759,23 @@ elif len(isr_output) == 0 and len(program_output) > (PROGRAM_MAX_LENGTH + ISR_MA
 output_file = open(output_file_name, 'w')
 output_lines = ['v3.0 hex words addressed\n']
 
-output_index = 0
-word_index = 0
-output = program_output
-is_isr = False
-for i in range((2**20) // 16):
-    line_number_str = format(i*16, 'X');
-    output_line = line_number_str.zfill(5) + ':'
-
-
-    if not is_isr and output_index >= len(output):
-        is_isr = True
-        output_index = 0
-        output = isr_output
+def add_output_lines(output, base_address=0):
+    output_index = 0
+    for i in range(math.ceil(len(output) / 16)):
+        line_number_str = format(base_address + (i * 16), 'X');
+        output_line = line_number_str.zfill(5) + ':'
     
-    if is_isr and output_index >= len(output):
-        break
-    
-    for j in range(16):
-        if output_index >= len(output) or (is_isr and word_index < ISR_ADDRESS):
-            output_line += ' 000'
-        else:
-            output_line += ' ' + output[output_index]
-            output_index += 1
-        pass
-        
-        word_index+=1
-    
-    output_lines.append(output_line + '\n')
+        for j in range(16):
+            if output_index >= len(output):
+                output_line += ' 000'
+            else:
+                output_line += ' ' + output[output_index]
+                output_index += 1
+            
+        output_lines.append(output_line + '\n')
 
+add_output_lines(program_output)
+add_output_lines(isr_output, ISR_ADDRESS)
 
 output_file.writelines(output_lines)
 output_file.close()
