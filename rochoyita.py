@@ -401,7 +401,6 @@ def pseudo_assemble_stack_push(line, tokens, line_number, **kwargs):
         
     return (
         # update SP
-        'ALUFSETO ADD',
         'ALUFSET 0000011',     # AZ, AC -> 111... + B = B - 1 (Decrement SP)
         'ALUEVAL SP',
         'ALUSTORER SP',
@@ -424,7 +423,6 @@ def pseudo_assemble_stack_pop(line, tokens, line_number, **kwargs):
     output = [
         # copy SP to MAR
         'COPY SP MARL',                     # lower bits
-        'ALUFSETO ADD',
         'ALUFSET 0000111',                  # AZ, AC, BZ -> 111... + 0 = 111...(n-1)
         'ALUEVAL A',                        # does not matter
         'ALUSTORER MARH',                   # upper bits
