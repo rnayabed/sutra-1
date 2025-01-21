@@ -119,12 +119,14 @@ ALUEVAL B
 
 :up
 // right shift 
+/*
 steps:
 1. NAND with 0011111111 and compliment result
 2. Right/Left shift by 1
 3. if 0 then 
     add 0010000000 or 0000000001
     increase/decrease row_bank (?)
+*/
      
 
 

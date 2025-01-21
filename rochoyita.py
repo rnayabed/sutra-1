@@ -1,5 +1,6 @@
 #!/bin/python
-# rochoyita - simple assembler for sutra-1
+# rochoyita - simple assembler for sutra-1 
+# supported target: Logisim compatible hex file
 
 import math, enum, re, argparse, pathlib, itertools
 
@@ -102,7 +103,7 @@ instructions = {
             Operand(OperandType.DESTINATION,    3),
         )
     ),
-    'ACCU'      : Instruction(
+    'AOP'      : Instruction(
         '10010100',
         (
             Operand(OperandType.DATA,           2),
@@ -209,7 +210,7 @@ label_unassembled_lines = []
 def assemble(line, tokens, line_number=None):
     instruction = instructions[tokens[0]]
 
-    print('\033[32mASSEMBLE', line.ljust(20), sep='\t', end='\t')
+    print('\033[32mASSEMBLE'.ljust(15), line.ljust(25), sep='\t', end='\t')
 
     if (len(tokens) - 1) != len(instruction.operands):
         error(line_number, line, f'operands mismatch. expected {len(instruction.operands)}, given {len(tokens) - 1}')
@@ -260,7 +261,6 @@ def assemble(line, tokens, line_number=None):
 
     return hex_
 
-# TODO: add comments that end with //
 # Helper funcs
 
 def generate_binary(line_number, line, value_str, signed, bits):
@@ -305,7 +305,7 @@ def generate_binary(line_number, line, value_str, signed, bits):
 def pseudo_assemble_loadi(line, tokens, line_number, **kwargs):
     # LOADI <destination:2> <value>
 
-    signed = tokens[0] != 'LOADI_UNSIGNED'
+    signed = tokens[0] == 'LOADI_SIGNED'
     
     destination = tokens[1]
     value_str = tokens[2]
@@ -339,18 +339,20 @@ def pseudo_assemble_alu_op(line, tokens, line_number, **kwargs):
     option = tokens[1]
 
     match option:
-        case "ADD":
+        case 'ADD':
             o = '0000000'
-        case "SUB":
+        case 'SUB':
             o = '1000010'   # A - B
-        case "SUB_REV":
+        case 'SUB_REV':
             o = '1001000'   # B - A
-        case "NAND":
+        case 'NAND':
             o = '0100000'
-        case "NOT":
+        case 'NOT':
             o = '0100011'   # B'
-        case "NOT_A":
+        case 'NOT_A':
             o = '0101100'   # A'
+        case 'AND':
+            o = '1100000'
         case _:
             error(line_number, line, f'invalid option {option}')
 
@@ -584,16 +586,55 @@ def pseudo_assemble_jump(line, tokens, line_number, **kwargs):
 
     return output
 
+'''
+Accumulator modes
 
+S1  S2
+B9  B10
+I1  I0
+
+0   0   Shift left
+0   1   Shift right
+1   0   Load
+1   1   Clear
+
+
+new:
+0   0   Nothing
+1   1   Load            divide clocks here based on Low/high bits
+0   1   Shift left
+1   0   Shift right
+
+'''
+
+def pseudo_assemble_a_op(line, tokens, line_number, **kwargs):
+    # AOPT
+
+    option = tokens[1]
+
+    match option:
+        case 'SLEFT':
+            o = '01'
+        case 'SRIGHT':
+            o = '10'
+        case _:
+            error(line_number, line, f'invalid option {option}')
+
+    return (f'AOP {o}',)
+    pass
+
+
+# TODO: -1 from here and handle that in the checker
 pseudo_instructions = {
     'LOADI'             : [pseudo_assemble_loadi,       3],
-    'LOADI_UNSIGNED'    : [pseudo_assemble_loadi,       3],
-    'ALUFSETO'           :[pseudo_assemble_alu_op,      2],
+    'LOADI_SIGNED'      : [pseudo_assemble_loadi,       3],
+    'ALUFSETO'          : [pseudo_assemble_alu_op,      2],
     'LOADMARI'          : [pseudo_assemble_loadmari,    2],
     'STACKPUSH'         : [pseudo_assemble_stack_push,  2],
     'STACKPOP'          : [pseudo_assemble_stack_pop,   2],
     'CALL'              : [pseudo_assemble_call,        2],
-    'RETURN'            : [pseudo_assemble_return,      1]
+    'RETURN'            : [pseudo_assemble_return,      1],
+    'AOPT'              : [pseudo_assemble_a_op,        2]
 }
 
 for pj in pseudo_jumps.keys():
@@ -618,8 +659,8 @@ for line in source_lines:
     current_ins_address = len(output) + (ISR_ADDRESS if isr_being_processed else 0)
 
     if line.startswith(':'):
-        if not line[1:].isalnum():
-            error(line_number, line, f'invalid label "{line}". It MUST only be alphabetic')
+        if re.search(r'[\s_]', line):
+            error(line_number, line, f'invalid label "{line}". It MUST not contain whitespace or "_"')
 
         if line[1:] == 'ISR':
             # move all further lines to ISR address
@@ -629,9 +670,12 @@ for line in source_lines:
         
         addr_binary = format(current_ins_address, 'b').zfill(20) # generate 20 bit address
         label_addresses[line] = addr_binary
-        print(f'\033[35mLABEL  \t{line}\t{current_ins_address}\t{addr_binary}\033[0m')
+        print(f'\033[35mLABEL'.ljust(15), line.ljust(10), str(current_ins_address).ljust(5), format(current_ins_address, 'X').zfill(4).ljust(5), '\033[0m', sep='\t')
         continue # Ignore label
 
+    # Ignore trailing comments
+    if '//' in line:
+        line = line[:line.index('//')]
 
     tokens = line.split()
     instruction = tokens[0].upper()
@@ -640,7 +684,8 @@ for line in source_lines:
         output.append(assemble(line, tokens, line_number))
     elif instruction in pseudo_instructions:
         # TODO: use placeholders for colours
-        print('\033[33mPSEUDO  ', line.ljust(20), '\033[0m', sep='\t')
+        # TODO: use constants for these magic numbers
+        print('\033[33mPSEUDO'.ljust(15), line.ljust(20), '\033[0m', sep='\t')
 
         max_length = pseudo_instructions[instruction][1]
         if max_length > -1 and len(tokens) != max_length:
@@ -650,7 +695,7 @@ for line in source_lines:
 
         for m in output_mnemonics:
             if m[0] == '>':
-                print('\033[32mASSEMBLE LATER', m.ljust(20), '\033[0m', sep='\t')
+                print('\033[32mASSEMBLE LATER'.ljust(15), m.ljust(20), '\033[0m', sep='\t')
                 # TODO: refactor this to separate to save space?
                 label_unassembled_lines.append((len(output), line_number, line, isr_being_processed))
                 output.append(m)
@@ -661,8 +706,9 @@ for line in source_lines:
         error(line_number, line, f'"{instruction}" is not a valid instruction')
         exit(1)
 
+
 if len(label_unassembled_lines) > 0:
-    print('resolve labels ...')
+    print('\n\033[36mresolve labels ...\033[0m')
 
 # post process label_addresses
 for l in label_unassembled_lines:
@@ -689,6 +735,37 @@ for l in label_unassembled_lines:
 
 #TODO: handle case different instructions properly
 
+# generate report
+# guidelines
+# total             00000 - FFFFF       1048576 words
+# program           00000 - FF7FF       1046528 words
+# ISR               FF800 - FFE0B          1548 words
+# stack             FFE0C - FFFFF           500 words
+
+PROGRAM_MAX_LENGTH = 1046528
+ISR_MAX_LENGTH = 1548
+
+print('\033[36m')
+print('====Memory Layout====')
+print('PROGRAM'.ljust(10), '00000', format(len(program_output) - 1, 'X').zfill(5), f'{len(program_output)} words', sep='\t')
+if len(isr_output) > 0:
+    print('ISR  '.ljust(10), format(ISR_ADDRESS, 'X').zfill(5), format(ISR_ADDRESS + len(program_output) - 1, 'X').zfill(5), f'{len(isr_output)} words', sep='\t')
+print('=====================')
+print('\033[0m')
+
+if len(isr_output) > 0:
+    ex = []
+    if len(program_output) > PROGRAM_MAX_LENGTH:
+        ex.append(f'program code exceeds max size and overlaps with ISR code space by {len(program_output) - PROGRAM_MAX_LENGTH} words')
+    
+    if len(isr_output) > ISR_MAX_LENGTH:
+        ex.append(f'ISR code exceeds max size and overlaps with stack space by {len(isr_output) - ISR_MAX_LENGTH} words!')
+    
+    if ex: error_raw(ex)
+elif len(isr_output) == 0 and len(program_output) > (PROGRAM_MAX_LENGTH + ISR_MAX_LENGTH):
+    error_raw(f'program code exceeds max size and overlaps with stack space by {len(program_output) - (PROGRAM_MAX_LENGTH + ISR_MAX_LENGTH)} words')
+    pass
+
 # generate output
 output_file = open(output_file_name, 'w')
 output_lines = ['v3.0 hex words addressed\n']
@@ -698,7 +775,7 @@ word_index = 0
 output = program_output
 is_isr = False
 for i in range((2**20) // 16):
-    line_number_str = format(i*16, 'x');
+    line_number_str = format(i*16, 'X');
     output_line = line_number_str.zfill(5) + ':'
 
 
