@@ -490,16 +490,8 @@ def pseudo_assemble_call(line, tokens, line_number, **kwargs):
         output += pseudo_assemble_stack_push(line, (None, r), line_number)
 
     output += pseudo_assemble_jump(line, ('J', address), line_number)
-     
-    # # jump to address
-    # output.append('JUMP 00')
 
-    print('out', '\n'.join(output))
-    print('extra len', len(output), current_ins_address + len(output))
-    label_addresses[return_address] = address_binary = format(current_ins_address + len(output), 'b').zfill(20)
-
-
-
+    label_addresses[return_address] = format(current_ins_address + len(output), 'b').zfill(20)
 
     # executed after RETURN
     # pop D, C, B, A
@@ -672,7 +664,7 @@ for line in source_lines:
         
         addr_binary = format(current_ins_address, 'b').zfill(20) # generate 20 bit address
         label_addresses[line] = addr_binary
-        print(f'\033[35mLABEL'.ljust(15), line.ljust(10), str(current_ins_address).ljust(5), format(current_ins_address, 'X').zfill(4).ljust(5), '\033[0m', sep='\t')
+        print(f'\033[35mLABEL'.ljust(15), line.ljust(10), str(current_ins_address).ljust(5), format(current_ins_address, 'X').zfill(4), '\033[0m', sep='\t')
         continue # Ignore label
 
     # Ignore trailing comments

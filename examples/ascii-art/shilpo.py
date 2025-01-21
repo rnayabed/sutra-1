@@ -46,7 +46,7 @@ def set_reg(reg, value):
 
     # output.append(f'LOADI {reg} b{value}')
     output.append(f'OUT {reg}')
-    print(f'reg {reg}, value {value}')
+    # print(f'reg {reg}, value {value}')
 
 # A = row bank & col index
 # B = row data
@@ -71,7 +71,7 @@ for c in range(64):
         
         if not empty:
             # select row and column   01<row bank:2><column index:6>
-            print(f'row bank {rb}, column {c}')
+            # print(f'row bank {rb}, column {c}')
             set_reg('A', f'01{format(rb, 'b').zfill(2)}{format(c, 'b').zfill(6)}')
             
             # row data                10<data:8>
