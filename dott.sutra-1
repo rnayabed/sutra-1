@@ -60,16 +60,22 @@ ILOCKSET 1
 LOADI A b1000000000
 OUT A
 
+
+
+
 // ISR maps: UP DOWN LEFT RIGHT
 /* masking trick, OC & NAND */
 
-COPY ISR A
+COPY ISR B
 ALUFSETO AND
 
+
+
+
 :up
-LOADI B b0000001000
+LOADI A b0000001000
 ALUEVAL B
-JZ :render // TODO: change!
+JZ :down
 
 
 /*
@@ -108,3 +114,158 @@ J :render
 
 
 
+:down
+LOADI A b0000000100
+ALUEVAL B
+JZ :left
+
+
+/*
+if row_data = 0000000001, -1 from row_bank, row_data = 10000000
+else simply left shift row_data
+*/
+
+// check if already at end
+LOADI A b0000000001
+ALUEVAL D
+JZ :down-normal
+
+COPY C A
+
+LOADI B b0001000000
+ALUFSETO SUB
+ALUEVAL B
+ALUSTORER A
+
+LOADI B b0011111111
+ALUFSETO AND
+ALUEVAL A
+ALUSTORER C
+
+LOADI D b0010000000
+J :render
+
+:down-normal
+// right shift row data
+COPY D A
+AOPT SRIGHT
+COPY A D
+
+J :render
+
+
+
+
+
+:left
+LOADI A b0000000010
+ALUEVAL B
+JZ :right
+
+
+/*
+
+A = C
+    00xx010111
+B = 0000111111
+A = A.B
+  = 0000010111
+
+A = A - 1
+  = 0000010110
+
+B = C
+    00xx010111
+C = A
+  = 0000010110
+A = 0011000000
+A = A.B
+  = 00xx000000
+
+A = A+C
+  = 00xx010110
+
+C = A
+
+*/
+
+COPY C A
+LOADI B b0000111111
+ALUFSETO AND
+ALUEVAL B
+ALUSTORER A
+
+ALUFSET 0001100 // # BZ, BC -> 111... + A = A - 1
+ALUEVAL A
+ALUSTORER A
+
+COPY C B
+COPY A C
+LOADI A b0011000000
+ALUFSETO AND
+ALUEVAL B
+ALUSTORER A
+
+ALUFSETO ADD
+ALUEVAL C
+ALUSTORER C
+
+J :render
+
+
+
+:right
+LOADI A b0000000001
+ALUEVAL B
+JZ :render
+
+
+/*
+
+A = C
+    00xx010111
+B = 0000111111
+A = A.B
+  = 0000010111
+
+A = A + 1
+  = 0000010110
+
+B = C
+    00xx010111
+C = A
+  = 0000010110
+A = 0011000000
+A = A.B
+  = 00xx000000
+
+A = A+C
+  = 00xx010110
+
+C = A
+
+*/
+
+COPY C A
+LOADI B b0000111111
+ALUFSETO AND
+ALUEVAL B
+ALUSTORER A
+
+LOADI B 1
+ALUFSETO ADD
+ALUEVAL B
+ALUSTORER A
+
+COPY C B
+COPY A C
+LOADI A b0011000000
+ALUFSETO AND
+ALUEVAL B
+ALUSTORER A
+
+ALUFSETO ADD
+ALUEVAL C
+ALUSTORER C
+
+J :render

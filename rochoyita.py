@@ -593,17 +593,19 @@ S1  S2
 B9  B10
 I1  I0
 
-0   0   Shift left
-0   1   Shift right
-1   0   Load
-1   1   Clear
+0   0   Shift left          A
+0   1   Shift right         B
+1   0   Load                C
+1   1   Clear               D
 
 
 new:
 0   0   Nothing
+1   0   Shift left
+0   1   Shift right
 1   1   Load            divide clocks here based on Low/high bits
-0   1   Shift left
-1   0   Shift right
+
+TODO: check if its worth without killing clock in A
 
 '''
 
@@ -614,9 +616,9 @@ def pseudo_assemble_a_op(line, tokens, line_number, **kwargs):
 
     match option:
         case 'SLEFT':
-            o = '01'
-        case 'SRIGHT':
             o = '10'
+        case 'SRIGHT':
+            o = '01'
         case _:
             error(line_number, line, f'invalid option {option}')
 
