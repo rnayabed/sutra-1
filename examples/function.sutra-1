@@ -12,7 +12,7 @@ STORE C
 RETURN
 
 :main
-// wont be preserved
+// will be preserved but be overwritten by the LOADMARI at the end
 LOADI A 1 
 
 // will be preserved
