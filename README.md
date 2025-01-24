@@ -4,7 +4,7 @@
 
 *Simple 10-bit CPU from scratch*
 
-<img src="https://raw.githubusercontent.com/rnayabed/sutra-1/master/screenshots/main.png" alt="Sutra-1 Main Screenshot">
+<img src="https://raw.githubusercontent.com/rnayabed/sutra-1/blob/master/screenshots/main.png" alt="Sutra-1 Main Screenshot">
 
 ### [Demonstration Video](https://youtu.be/MTGICKC4G5U)
 
