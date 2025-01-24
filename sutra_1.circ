@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project source="3.9.0" version="1.0">
-  This file is intended to be loaded by Logisim-evolution v3.9.0(https://github.com/logisim-evolution/).
+<project source="3.9.0dev" version="1.0">
+  This file is intended to be loaded by Logisim-evolution v3.9.0dev(https://github.com/logisim-evolution/).
 
   <lib desc="#Wiring" name="0">
     <tool name="Pin">
@@ -1287,22 +1287,22 @@
     </comp>
     <comp lib="5" loc="(5530,2880)" name="Button">
       <a name="facing" val="south"/>
-      <a name="label" val="UP"/>
+      <a name="label" val="UP_3"/>
       <a name="labelloc" val="north"/>
     </comp>
     <comp lib="5" loc="(5620,2880)" name="Button">
       <a name="facing" val="south"/>
-      <a name="label" val="DOWN"/>
+      <a name="label" val="DOWN_2"/>
       <a name="labelloc" val="north"/>
     </comp>
     <comp lib="5" loc="(5710,2880)" name="Button">
       <a name="facing" val="south"/>
-      <a name="label" val="LEFT"/>
+      <a name="label" val="LEFT_1"/>
       <a name="labelloc" val="north"/>
     </comp>
     <comp lib="5" loc="(5800,2880)" name="Button">
       <a name="facing" val="south"/>
-      <a name="label" val="RIGHT"/>
+      <a name="label" val="RIGHT_0"/>
       <a name="labelloc" val="north"/>
     </comp>
     <comp lib="8" loc="(2520,1125)" name="Text">
@@ -1457,7 +1457,9 @@
     <comp loc="(4390,2490)" name="Buffer38"/>
     <comp loc="(4430,3600)" name="Buffer38"/>
     <comp loc="(4680,2990)" name="Or4"/>
-    <comp loc="(5120,2820)" name="Buffer10"/>
+    <comp loc="(5120,2820)" name="Buffer10">
+      <a name="label" val="OUTPUT_BUS"/>
+    </comp>
     <comp loc="(5300,1410)" name="Mux2To1_4"/>
     <comp loc="(5300,1510)" name="Or2_4"/>
     <comp loc="(5310,1840)" name="NormalRegister1">
@@ -2907,9 +2909,9 @@
     <wire from="(4990,1430)" to="(4990,1680)"/>
     <wire from="(4990,1430)" to="(5080,1430)"/>
     <wire from="(4990,1680)" to="(5350,1680)"/>
-    <wire from="(5030,1510)" to="(5030,2790)"/>
+    <wire from="(5030,1510)" to="(5030,2690)"/>
     <wire from="(5030,1510)" to="(5080,1510)"/>
-    <wire from="(5030,2790)" to="(5180,2790)"/>
+    <wire from="(5030,2690)" to="(5180,2690)"/>
     <wire from="(5040,1810)" to="(5040,1820)"/>
     <wire from="(5040,1810)" to="(5240,1810)"/>
     <wire from="(5040,1820)" to="(5090,1820)"/>
@@ -2936,7 +2938,7 @@
     <wire from="(5120,1340)" to="(5120,1360)"/>
     <wire from="(5120,1360)" to="(5130,1360)"/>
     <wire from="(5120,2820)" to="(5340,2820)"/>
-    <wire from="(5180,2790)" to="(5180,3020)"/>
+    <wire from="(5180,2690)" to="(5180,3020)"/>
     <wire from="(5180,3020)" to="(5810,3020)"/>
     <wire from="(5190,1280)" to="(5200,1280)"/>
     <wire from="(5190,1340)" to="(5200,1340)"/>

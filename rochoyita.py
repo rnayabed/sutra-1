@@ -695,7 +695,7 @@ for line in source_lines:
 
 
 if len(label_unassembled_lines) > 0:
-    print('\n\033[36mresolve labels ...\033[0m')
+    print('\n\033[36mResolve labels \033[0m')
 
 # post process label_addresses
 for l in label_unassembled_lines:
