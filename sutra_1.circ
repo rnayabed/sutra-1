@@ -1280,6 +1280,7 @@
     <comp lib="5" loc="(4170,1060)" name="7-Segment Display"/>
     <comp lib="5" loc="(5340,2710)" name="DotMatrix">
       <a name="color" val="#ffca2b"/>
+      <a name="dotshape" val="circle"/>
       <a name="matrixcols" val="64"/>
       <a name="matrixrows" val="32"/>
       <a name="offcolor" val="#000000"/>
