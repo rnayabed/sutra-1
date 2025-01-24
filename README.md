@@ -6,8 +6,6 @@
 
 <img src="https://raw.githubusercontent.com/rnayabed/sutra-1/refs/heads/master/screenshots/main.png" alt="Sutra-1 Main Screenshot">
 
-### [Demonstration Video](https://youtu.be/MTGICKC4G5U)
-
 </div>
 
 ## Introduction
