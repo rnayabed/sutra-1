@@ -6,6 +6,8 @@
 
 <img src="https://raw.githubusercontent.com/rnayabed/sutra-1/refs/heads/master/screenshots/main.png" alt="Sutra-1 Main Screenshot">
 
+### [Demonstration Video](https://youtu.be/2qCsluuu69Y)
+
 </div>
 
 ## Introduction
@@ -14,7 +16,7 @@ I wanted to apply the concepts I had learnt in my Digital Systems classes and pu
 
 Due to no prior knowledge of a Hardware Description Language and being a beginner in the world of Digital Systems, I used [Logisim Evolution](https://github.com/logisim-evolution/logisim-evolution) to build the system. 
 
-I insisted on building every discrete component from scratch (instead of using built-in components) and with NAND gates only, to keep myself true to the Nand2Tetris course.
+I insisted on building every discrete component from scratch (instead of using built-in components) and with NAND gates only, to keep myself true to the Nand2Tetris course. Only the display was built from built-in components as it is considered an I/O device and not a part of the CPU.
 
 ## Components
 
