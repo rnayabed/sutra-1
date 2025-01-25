@@ -29,32 +29,32 @@ I have included a simple companion program that can generate program to print so
 python shilpi.py -t 'namaste world'
 ```
 
-This generates an output assembly file with the name `art.S` which can then be compiled by rochoyita
+This generates an output assembly file with the name `display-image.S` which can then be compiled by rochoyita
 
 ```
-python rochoyita.py art.S
+python rochoyita.py display-image.S
 ```
 
-This will generate an output file `art.hex` that can then be loaded to memory in our `main` circuit inside Logisim Evolution
+This will generate an output file `display-image.hex` that can then be loaded to memory in our `main` circuit inside Logisim Evolution
 
 <img src="https://raw.githubusercontent.com/rnayabed/sutra-1/refs/heads/master/screenshots/shilpi-text.png" alt="Shilpi text mode screenshot">
 
 ### Image mode
 
-We can also provide it a 64x32 1-bit image formatted with pixel ON as '#' and OFF as '.'. A blank template is provided in `examples/art/blank.txt`
+We can also provide it a 64x32 1-bit image formatted with pixel ON as '#' and OFF as '.'. A blank template is provided in `examples/images/blank.txt`
 
-I have also included some 1-bit images in `examples/art` that can be parsed by shilpi and rendered on Sutra-1
-
-```shell
-python shilpi.py examples/art/india.txt
-```
-
-This generates an output assembly file with the name `art.S` which can then be compiled by rochoyita
+I have also included some 1-bit images in `examples/images` that can be parsed by shilpi and rendered on Sutra-1
 
 ```shell
-python rochoyita.py art.S
+python shilpi.py examples/images/india.txt
 ```
 
-This will generate an output file `art.hex` that can then be loaded to memory in our `main` circuit inside Logisim Evolution
+This generates an output assembly file with the name `display-image.S` which can then be compiled by rochoyita
+
+```shell
+python rochoyita.py display-image.S
+```
+
+This will generate an output file `display-image.hex` that can then be loaded to memory in our `main` circuit inside Logisim Evolution
 
 <img src="https://raw.githubusercontent.com/rnayabed/sutra-1/refs/heads/master/screenshots/shilpi-image.png" alt="Shilpi image mode screenshot">

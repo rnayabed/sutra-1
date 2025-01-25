@@ -2,7 +2,7 @@
 
 # Sutra-1 / সুত্র-1 / सूत्र-1
 
-*Simple 10-bit CPU from scratch*
+*10-bit CPU and Assembler*
 
 <img src="https://raw.githubusercontent.com/rnayabed/sutra-1/refs/heads/master/screenshots/main.png" alt="Sutra-1 Main Screenshot">
 

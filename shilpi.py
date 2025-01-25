@@ -474,12 +474,12 @@ You should have received a copy of the GNU General Public License along with thi
 
 if args.text:
     art = generate_art_from_text(args.input)
-    output_file_name = args.output if args.output else 'art.S'
+    output_file_name = args.output if args.output else 'display-image.S'
     print(art)
 else:
     input_file_name = args.input
 
-    output_file_name = args.output if args.output else f'{Path.cwd()}{os.sep}art.S'
+    output_file_name = args.output if args.output else f'{Path.cwd()}{os.sep}display-image.S'
 
     with open(input_file_name, 'r') as f:
         # art = f.readlines()
