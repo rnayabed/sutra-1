@@ -25,7 +25,7 @@ args = parser.parse_args()
 DISABLE_PREPROCESSOR = args.raw
 
 if args.version:
-    print(f'''rochoyita Version {VERSION}
+    print(f'''rochoyita version {VERSION}
 Copyright (C) 2025 Debayan Sutradhar
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3.

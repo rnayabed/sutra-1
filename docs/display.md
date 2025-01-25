@@ -23,15 +23,32 @@ Finally, we load these changes to our display buffer
 
 I have included a simple companion program that can generate program to print something on the display. 
 
+### Usage
+
+```
+usage: shilpi [-h] [-v] [-o OUTPUT] [-t] [input]
+
+Simple pixel drawer from the Sutra-1 System
+
+positional arguments:
+  input                Input text or file
+
+options:
+  -h, --help           show this help message and exit
+  -v, --version        Version and copyright information
+  -o, --output OUTPUT
+  -t, --text
+```
+
 ### Text mode
 
 ```shell
-python shilpi.py -t 'namaste world'
+python shilpi.py -t "namaste world"
 ```
 
 This generates an output assembly file with the name `display-image.S` which can then be compiled by rochoyita
 
-```
+```shell
 python rochoyita.py display-image.S
 ```
 

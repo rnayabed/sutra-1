@@ -19,6 +19,23 @@ Rochoyita is a rudimentary assembler written for Sutra-1.
 - Raw mode which disables pre processor. It is automatically enabled when `.s` file is encountered on non Windows Systems or `--raw` is explicitly passed in arguments.
 - [Pseudo instructions](https://github.com/rnayabed/sutra-1/blob/master/docs/ISA.md#Pseudo_Instructions)
 
+## Usage
+
+```
+usage: rochoyita [-h] [-v] [-o OUTPUT] [-r] [input]
+
+Simple assembler from the Sutra-1 System
+
+positional arguments:
+  input                Input assembly source file
+
+options:
+  -h, --help           show this help message and exit
+  -v, --version        Version and copyright information
+  -o, --output OUTPUT  Output Logisim Evolution memory image file
+  -r, --raw            Disable preprocessor
+```
+
 ## High-level flowchart
 
 ```mermaid
