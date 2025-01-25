@@ -8,7 +8,7 @@ Interrupt Service Routine starts at address `0xFF800`. It can have a maximum of 
 
 To declare an ISR, we will need simply need  
 
-[!WARNING]  
+> [!WARNING]  
 > If an ISR is not provided and an interrupt is triggered, execution will be halted.
 
 ## Examples

@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 '''
-Screen commands:
+Display commands:
 select row and column   01<row bank:2><column index:6>
 row data                10<data:8>
 load buffer             1100000000

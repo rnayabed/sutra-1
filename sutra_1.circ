@@ -1281,6 +1281,7 @@
     <comp lib="5" loc="(5340,2710)" name="DotMatrix">
       <a name="color" val="#ffca2b"/>
       <a name="dotshape" val="circle"/>
+      <a name="label" val="DISPLAY"/>
       <a name="matrixcols" val="64"/>
       <a name="matrixrows" val="32"/>
       <a name="offcolor" val="#000000"/>
@@ -1465,7 +1466,7 @@
     <comp loc="(5310,1840)" name="NormalRegister1">
       <a name="label" val="ILOCK"/>
     </comp>
-    <comp loc="(5340,2710)" name="ScreenController">
+    <comp loc="(5340,2710)" name="DisplayController">
       <a name="facing" val="north"/>
     </comp>
     <comp loc="(5560,1350)" name="NormalRegister4">
@@ -7553,9 +7554,9 @@
     <wire from="(480,340)" to="(480,430)"/>
     <wire from="(480,340)" to="(490,340)"/>
   </circuit>
-  <circuit name="ScreenController">
+  <circuit name="DisplayController">
     <a name="appearance" val="evolution"/>
-    <a name="circuit" val="ScreenController"/>
+    <a name="circuit" val="DisplayController"/>
     <a name="circuitnamedboxfixedsize" val="true"/>
     <a name="simulationFrequency" val="1.0"/>
     <comp lib="0" loc="(1510,5770)" name="Splitter">
@@ -8445,70 +8446,70 @@
       <a name="width" val="6"/>
     </comp>
     <comp loc="(1410,110)" name="Decoder64"/>
-    <comp loc="(2490,1090)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,1220)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,1350)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,1480)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,1610)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,1740)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,180)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,1870)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,2000)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,2130)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,2260)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,2390)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,2520)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,2650)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,2780)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,2910)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,3040)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,310)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,3170)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,3300)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,3430)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,3560)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,3690)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,3820)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,3950)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,4080)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,4210)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,4340)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,440)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,4470)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,4600)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,4730)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,4860)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,4990)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,50)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,5120)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,5250)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,5380)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,5510)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,5640)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,570)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,5770)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,5900)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,6030)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,6160)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,6290)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,6420)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,6550)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,6680)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,6810)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,6940)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,700)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,7070)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,7200)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,7330)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,7460)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,7590)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,7720)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,7850)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,7980)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,8110)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,8240)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,830)" name="ScreenColumnUnit"/>
-    <comp loc="(2490,960)" name="ScreenColumnUnit"/>
+    <comp loc="(2490,1090)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,1220)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,1350)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,1480)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,1610)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,1740)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,180)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,1870)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,2000)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,2130)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,2260)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,2390)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,2520)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,2650)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,2780)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,2910)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,3040)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,310)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,3170)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,3300)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,3430)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,3560)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,3690)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,3820)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,3950)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,4080)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,4210)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,4340)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,440)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,4470)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,4600)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,4730)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,4860)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,4990)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,50)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,5120)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,5250)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,5380)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,5510)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,5640)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,570)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,5770)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,5900)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,6030)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,6160)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,6290)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,6420)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,6550)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,6680)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,6810)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,6940)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,700)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,7070)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,7200)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,7330)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,7460)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,7590)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,7720)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,7850)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,7980)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,8110)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,8240)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,830)" name="DisplayColumnUnit"/>
+    <comp loc="(2490,960)" name="DisplayColumnUnit"/>
     <wire from="(1070,150)" to="(1070,700)"/>
     <wire from="(1070,150)" to="(2250,150)"/>
     <wire from="(1110,70)" to="(1110,540)"/>
@@ -9650,31 +9651,33 @@
     <wire from="(980,110)" to="(1190,110)"/>
     <wire from="(980,540)" to="(1110,540)"/>
   </circuit>
-  <circuit name="ScreenColumnUnit">
+  <circuit name="DisplayColumnUnit">
     <a name="appearance" val="logisim_evolution"/>
-    <a name="circuit" val="ScreenColumnUnit"/>
+    <a name="circuit" val="DisplayColumnUnit"/>
     <a name="circuitnamedboxfixedsize" val="true"/>
     <a name="simulationFrequency" val="1.0"/>
     <appear>
       <rect height="4" stroke="none" width="10" x="50" y="58"/>
-      <text dominant-baseline="alphabetic" fill="#404040" font-family="Dialog" font-size="12" text-anchor="start" x="65" y="64">ROW_BANK_...</text>
+      <text dominant-baseline="alphabetic" fill="#404040" font-family="Dialog" font-size="12" text-anchor="start" x="65" y="64">RB_VALUE</text>
       <rect height="4" stroke="none" width="10" x="50" y="78"/>
       <text dominant-baseline="alphabetic" fill="#404040" font-family="Dialog" font-size="12" text-anchor="start" x="65" y="84">ROW_BANK</text>
       <rect height="3" stroke="none" width="10" x="50" y="99"/>
-      <text dominant-baseline="alphabetic" fill="#404040" font-family="Dialog" font-size="12" text-anchor="start" x="65" y="104">WRITE_ENABLE</text>
+      <text dominant-baseline="alphabetic" fill="#404040" font-family="Dialog" font-size="12" text-anchor="start" x="65" y="104">S</text>
       <rect height="3" stroke="none" width="10" x="50" y="119"/>
-      <text dominant-baseline="alphabetic" fill="#404040" font-family="Dialog" font-size="12" text-anchor="start" x="65" y="124">CLK</text>
+      <text dominant-baseline="alphabetic" fill="#404040" font-family="Dialog" font-size="12" text-anchor="start" x="65" y="124">WD</text>
+      <rect height="3" stroke="none" width="10" x="50" y="139"/>
+      <text dominant-baseline="alphabetic" fill="#404040" font-family="Dialog" font-size="12" text-anchor="start" x="65" y="144">CLK</text>
       <rect height="4" stroke="none" width="10" x="260" y="58"/>
       <text dominant-baseline="alphabetic" fill="#404040" font-family="Dialog" font-size="12" text-anchor="end" x="255" y="64">O</text>
-      <rect height="20" stroke="none" width="200" x="60" y="130"/>
-      <rect fill="none" height="100" stroke="#000000" stroke-width="2" width="200" x="60" y="50"/>
-      <text dominant-baseline="alphabetic" fill="#ffffff" font-family="Dialog" font-size="14" font-weight="bold" text-anchor="middle" x="160" y="144">ScreenColumnUnit</text>
+      <rect height="20" stroke="none" width="200" x="60" y="150"/>
+      <rect fill="none" height="120" stroke="#000000" stroke-width="2" width="200" x="60" y="50"/>
+      <text dominant-baseline="alphabetic" fill="#ffffff" font-family="Dialog" font-size="14" font-weight="bold" text-anchor="middle" x="160" y="164">DisplayColumnUnit</text>
       <circ-anchor facing="east" x="270" y="60"/>
-      <circ-port dir="in" pin="1320,1000" x="50" y="120"/>
+      <circ-port dir="in" pin="1320,1000" x="50" y="140"/>
       <circ-port dir="in" pin="1320,910" x="50" y="60"/>
-      <circ-port dir="in" pin="1320,930" x="50" y="70"/>
-      <circ-port dir="in" pin="1320,960" x="50" y="90"/>
-      <circ-port dir="in" pin="1320,980" x="50" y="100"/>
+      <circ-port dir="in" pin="1320,930" x="50" y="80"/>
+      <circ-port dir="in" pin="1320,960" x="50" y="100"/>
+      <circ-port dir="in" pin="1320,980" x="50" y="120"/>
       <circ-port dir="out" pin="1740,570" x="270" y="60"/>
     </appear>
     <comp lib="0" loc="(1320,1000)" name="Pin">

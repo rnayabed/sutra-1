@@ -1,13 +1,13 @@
-# Screen
+# Display
 
-While not part of the actual CPU design, I have included an example screen in the main circuit as a basic I/O device.
+While not part of the actual CPU design, I have included a simple display in the main circuit as a basic I/O device.
 
-The screen is connected to the output bus. It has a resolution of 64x32 pixels.
+The display is connected to the output bus. It has a resolution of 64x32 pixels.
 
 Each column is divided into 4 8-bit banks.
 We first select a column and the corresponding row bank, then send the pixel values for that bank.
 
-Finally, we load these changes to our screen buffer
+Finally, we load these changes to our display buffer
 
 | Task | Syntax |
 |---|---|
@@ -21,7 +21,7 @@ Finally, we load these changes to our screen buffer
 
 ## Shilpi
 
-I have included a simple companion program that can generate program to print something on the screen. 
+I have included a simple companion program that can generate program to print something on the display. 
 
 ### Text mode
 

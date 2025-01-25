@@ -1,9 +1,9 @@
 /*
-Simple program to move a pixel across the 64x32 screen
+Simple program to move a pixel across the 64x32 display
 
-For more information about the screen, refer to https://github.com/rnayabed/sutra-1/blob/master/docs/screen.md
+For more information about the display, refer to https://github.com/rnayabed/sutra-1/blob/master/docs/display.md
 
-Screen commands:
+Display commands:
 select row and column   01<row bank:2><column index:6>
 row data                10<data:8>
 load buffer             1100000000
