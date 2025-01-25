@@ -1,22 +1,20 @@
-// Dot
-
 /*
+Simple program to move a pixel across the 64x32 screen
+
+For more information about the screen, refer to https://github.com/rnayabed/sutra-1/blob/master/docs/screen.md
+
 Screen commands:
 select row and column   01<row bank:2><column index:6>
 row data                10<data:8>
 load buffer             1100000000
 */
 
-# DEFINE ROW_BANK 42069
 // Row data is stored in D
 // Row bank and column index in C
 
 // Start from center
 // column 31, row 15
-//LOADI C b0001011111
-//LOADI D b0010000000
-
-LOADI C b0011000000
+LOADI C b0001011111
 LOADI D b0010000000
 
 

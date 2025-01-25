@@ -1,13 +1,18 @@
 #!/bin/python
+# shilpi - Simple pixel drawer for Sutra-1
+# SPDX-License-Identifier: GPL-3.0-only
 
-# /*
-# Screen commands:
-# select row and column   01<row bank:2><column index:6>
-# row data                10<data:8>
-# load buffer             1100000000
-# */
+'''
+Screen commands:
+select row and column   01<row bank:2><column index:6>
+row data                10<data:8>
+load buffer             1100000000
+'''
 
-import argparse, math
+import argparse, math, os
+from pathlib import Path
+
+VERSION = 1.0
 
 def error_raw(*text):
     print('\033[1;4;7;31m') # red with blue, underline, inverted text
@@ -71,7 +76,7 @@ def generate_art_from_text(text):
 ........
 .######.
 .#......
-.#.....
+.#......
 .######.
 .#......
 .#......
@@ -278,82 +283,112 @@ def generate_art_from_text(text):
 ........
 ''',
         '0': '''
+........
 .######.
-.#......
-.#......
-.#.....
+.#....#.
+.#....#.
+.#....#.
+.#....#.
 .######.
+........
 ''',
         '1': '''
+........
+....#...
+..###...
+....#...
+....#...
+....#...
 .######.
-.#......
-.#......
-.#.....
-.######.
+........
 ''',
         '2': '''
+........
+.######.
+......#.
 .######.
 .#......
 .#......
-.#.....
 .######.
+........
 ''',
         '3': '''
+........
 .######.
-.#......
-.#......
-.#.....
+......#.
 .######.
+......#.
+......#.
+.######.
+........
 ''',
         '4': '''
+........
+.#....#.
+.#....#.
 .######.
-.#......
-.#......
-.#.....
-.######.
+......#.
+......#.
+......#.
+........
 ''',
         '5': '''
+........
 .######.
 .#......
-.#......
-.#.....
 .######.
+......#.
+......#.
+.######.
+........
 ''',
         '6': '''
+........
 .######.
 .#......
-.#......
-.#.....
 .######.
+.#....#.
+.#....#.
+.######.
+........
 ''',
         '7': '''
+........
 .######.
-.#......
-.#......
-.#.....
-.######.
+......#.
+......#.
+......#.
+......#.
+......#.
+........
 ''',
         '8': '''
+........
 .######.
-.#......
-.#......
-.#.....
+.#....#.
 .######.
+.#....#.
+.#....#.
+.######.
+........
 ''',
         '9': '''
+........
 .######.
-.#......
-.#......
-.#.....
+.#....#.
 .######.
+......#.
+......#.
+......#.
+........
 ''',
         '0': '''
 ........
 .######.
-.#......
-.#......
-.#......
-.#......
+.#....#.
+.#....#.
+.#....#.
+.#....#.
 .######.
 ........
 ''',
@@ -383,6 +418,10 @@ def generate_art_from_text(text):
 
     text = text.upper()
 
+    MAX_LEN = 8*4
+    if len(text) > MAX_LEN:
+        error_raw(f'Text too long! Max permitted length is {MAX_LEN}')
+
     rows = []
     for i in range(0, len(text), 8):
         e = i+8
@@ -399,6 +438,8 @@ def generate_art_from_text(text):
         for row in range(8):
             for char in row_text:
                 for col in range(8):
+                    if char not in chars:
+                        error_raw(f'character "{char}" in input text is not supported.')
                     art += chars[char].strip()[col + (9 * row)]
             art+='\n'
     
@@ -413,19 +454,32 @@ parser = argparse.ArgumentParser(
     epilog='Copyright (C) 2025 Debayan "rnayabed" Sutradhar'
 )
 
+input_group = parser.add_mutually_exclusive_group()
+input_group.add_argument('-v', '--version', action='store_true', help='Version and copyright information')
+input_group.add_argument('input', nargs='?', help='Input text or file')
 parser.add_argument('-o', '--output')
 parser.add_argument('-t', '--text', action='store_true')
-parser.add_argument('input')
 args = parser.parse_args()
+
+if args.version:
+    print(f'''shilpi Version {VERSION}
+Copyright (C) 2025 Debayan Sutradhar
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>. ''')
+    exit()
 
 if args.text:
     art = generate_art_from_text(args.input)
-    output_file_name = args.output if args.output is not None else 'art.sutra-1'
+    output_file_name = args.output if args.output else 'art.S'
     print(art)
 else:
     input_file_name = args.input
 
-    output_file_name = args.output if args.output is not None else input_file_name + '.sutra-1'
+    output_file_name = args.output if args.output else f'{Path.cwd()}{os.sep}art.S'
 
     with open(input_file_name, 'r') as f:
         # art = f.readlines()

@@ -9,7 +9,11 @@ COPY B A
 ALUFSETO AND
 ALUEVAL C
 JZ :loop
-LOADISR 1000
+
+// Commenting below line will simply halt execution
+// ISR will not be executed and B will be set to 888
+LOADISR 1000 
+LOADI B 888   
 HALT
 
 :ISR

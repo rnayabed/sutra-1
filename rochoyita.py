@@ -1,8 +1,39 @@
 #!/bin/python
-# rochoyita - simple assembler for sutra-1 
-# supported target: Logisim compatible hex file
+# rochoyita - Simple assembler for Sutra-1
+# SPDX-License-Identifier: GPL-3.0-only
 
-import math, enum, re, argparse, pathlib, itertools
+import math, enum, re, argparse, itertools, pathlib, os
+from dataclasses import dataclass, field
+from pathlib import Path
+
+VERSION = 1.0
+
+# handle args
+parser = argparse.ArgumentParser(
+    prog='rochoyita',
+    description='Simple assembler from the Sutra-1 System',
+    epilog='Copyright (C) 2025 Debayan "rnayabed" Sutradhar',
+)
+
+input_group = parser.add_mutually_exclusive_group()
+input_group.add_argument('-v', '--version', action='store_true', help='Version and copyright information')
+input_group.add_argument('input', nargs='?', help='Input assembly source file')
+parser.add_argument('-o', '--output', help='Output Logisim Evolution memory image file')
+parser.add_argument('-r', '--raw', help='Disable preprocessor', action='store_true')
+args = parser.parse_args()
+
+DISABLE_PREPROCESSOR = args.raw
+
+if args.version:
+    print(f'''rochoyita Version {VERSION}
+Copyright (C) 2025 Debayan Sutradhar
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 3.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>. ''')
+    exit()
 
 def error_raw(*text):
     print('\033[1;4;7;31m') # red with blue, underline, inverted text
@@ -10,40 +41,40 @@ def error_raw(*text):
     print('\033[0m')
     exit(1)
 
-# handle args
-parser = argparse.ArgumentParser(
-    prog='rochoyita',
-    description='Simple assembler from the Sutra-1 System',
-    epilog='Copyright (C) 2025 Debayan "rnayabed" Sutradhar'
-)
+input_file_path = args.input
 
-parser.add_argument('-o', '--output')
-parser.add_argument('input')
-args = parser.parse_args()
+p = Path(input_file_path)
+if not p.is_file():
+    error_raw(f'input file "{input_file_path}" not found!')
 
-input_file_name = args.input
-output_file_name = args.output if args.output is not None else input_file_name + '.out'
+output_file_path = args.output if args.output else f'{Path.cwd()}{os.sep}{p.stem}.hex'
 
-if not pathlib.Path(input_file_name).is_file():
-    error_raw(f'input file "{input_file_name}" not found!')
+# guidelines
+# total             00000 - FFFFF       1048576 words
+# program           00000 - FF7FF       1046528 words
+# ISR               FF800 - FFE0B          1548 words
+# stack             FFE0C - FFFFF           500 words
 
-
-# TODO: use dataclass? or move all functions down here
-
-class Instruction:
-    def __init__(self, op_code, operands=()):
-        self.op_code = op_code
-        self.operands = operands
-
-class Operand:
-    def __init__(self, type, length):
-        self.type = type
-        self.length = length
+class Constants:
+    ISR_ADDRESS = 0xff800
+    PROGRAM_MAX_LENGTH = ISR_ADDRESS
+    STACK_LENGTH = 500
+    ISR_MAX_LENGTH = 0x100000 - STACK_LENGTH - PROGRAM_MAX_LENGTH
 
 class OperandType(enum.Enum):
     DESTINATION = 1
     SOURCE = 2
     DATA = 3
+
+@dataclass
+class Operand:
+    type: OperandType
+    length: int
+
+@dataclass
+class Instruction:
+    op_code: str
+    operands: tuple[Operand] = field(default_factory=list)
 
 instructions = {
     'COPY'      : Instruction(
@@ -153,56 +184,115 @@ def error(line_number, line, error):
 
 # pre process
 
-line_number = 0
-multi_line_comment_block = False
 
-source_file = open(input_file_name, 'r')
 define_replace = {}
 source_lines = []
-for line in source_file:
-    line_number +=1
-    line = line.strip()
 
-    if line.startswith('/*'):
-        multi_line_comment_block = True
+def preprocess(file):
+    if not Path(file).is_file():
+        error_raw(f'input file "{file}" not found!')
 
-    if line.startswith('//') or multi_line_comment_block or not line:
-        source_lines.append(line)
-        if line.endswith('*/'):
-            multi_line_comment_block = False
-        continue # Ignore comments and empty lines
+    extension = file[file.rindex('.'):]
+    if not extension.upper() != 'S':
+        error_raw(f'invalid file extension "{extension}". only .s and .S files are supported')
 
-    if line.startswith('#'):  
-        tokens = line.split() 
-        
-        if len(tokens[1]) < 2:
-            error(line_number, line, f'invalid preprocessor use')
+    source_file = open(file, 'r')
 
-        if tokens[1].upper() == 'DEFINE': 
-            if len(tokens) != 4:
-                error(line_number, line, f'"{line} is not a valid pre-processor directive')
+    multi_line_comment_block = False
+    line_number = 0
 
-            for name, value in define_replace.items():
-                tokens[3] = re.sub(rf'\b{name}\b', value, tokens[3])
+    branched_ignore = []
 
-            define_replace[tokens[2]] = tokens[3]
+    for line in source_file:
+        line_number +=1
+        line = line.strip()
+
+        if line.startswith('/*'):
+            multi_line_comment_block = True
+
+        if line.startswith('//') or multi_line_comment_block or not line:
+            if line.endswith('*/'):
+                multi_line_comment_block = False
+            continue # Ignore comments and empty lines
+
+        # Ignore trailing comments
+        if '//' in line:
+            line = line[:line.index('//')]
+
+        if line.startswith('#'):
+            if (extension == 's' and os.name != 'nt') or DISABLE_PREPROCESSOR:
+                error(line_number, line, f'preprocessor is not allowed in raw .s mode')
+
+            space_index = line.find(' ')            
+            directive = (line[1:] if space_index == -1 else line[1:space_index])
+
+            if directive == 'define': 
+                tokens = line.split() 
+                if len(tokens) != 3:
+                    error(line_number, line, f'"{line}" is not a valid #define statement')
+
+                macro_value = tokens[2]
+                for name, value in define_replace.items():
+                    macro_value = re.sub(rf'\b{name}\b', value, macro_value)
+
+                define_replace[tokens[1]] = macro_value
+            elif directive == 'undef':
+                tokens = line.split()
+
+                if len(tokens) != 2:
+                    error(line_number, line, f'"{line}" is not a valid #undef statement')
+
+                key = tokens[1]
+                if not define_replace.pop(key, False):
+                    error(line_number, line, f'"{key}" is not defined')
+            elif directive == 'include':
+                l_index = line.find('"')
+                r_index = line.rfind('"')
+                if l_index == -1 or r_index == -1:
+                    error(line_number, line, f'"{line}" is not a valid #include statement')
+
+                file_path = line[l_index + 1:r_index]
+
+                print('\033[36mINCLUDE'.ljust(15), f'"{file_path}"', sep='\t')
+                preprocess(f'{Path(file).resolve().parent}{os.sep}{file_path}')
+            elif directive == 'ifdef' or directive == 'ifndef':
+                tokens = line.split()
+
+                if len(tokens) != 2:
+                    error(line_number, line, f'"{line}" is not a valid #ifdef statement')
+
+                key = tokens[1]
+
+                branched_ignore.append((key not in define_replace) if directive == 'ifdef' else (key in define_replace))
+            elif directive == 'endif':
+                if len(branched_ignore) == 0:
+                    error(line_number, line, f'"{line}" is not a valid #endif statement. not in a conditional block')
+                branched_ignore.pop()
+
+            elif directive == 'else':
+                if len(branched_ignore) == 0:
+                    error(line_number, line, f'invalid #else placement. not in a conditional block')
+
+                branched_ignore[-1] = not branched_ignore[-1]
+            else:
+                error(line_number, line, f'invalid preprocessor directive')
         else:
-            error(line_number, line, f'invalid preprocessor directive "{tokens[1]}"')
-    else:
-        for name, value in define_replace.items():
-            line = re.sub(rf'\b{name}\b', value, line)
-    source_lines.append(line)
+            for name, value in define_replace.items():
+                line = re.sub(rf'\b{name}\b', value, line)
 
-source_file.close()
+            if len(branched_ignore) == 0 or not branched_ignore[-1]:
+                source_lines.append((file, line_number, line))
+
+    source_file.close()
+
+preprocess(input_file_path)
 
 # assemble
-line_number = 0
 multi_line_comment_block = False
 program_output = []
 isr_output = []
-ISR_ADDRESS = 0xff800       # TODO: move this to magic
 label_addresses = {
-    ':ISR': ISR_ADDRESS
+    ':ISR': Constants.ISR_ADDRESS
 }
 label_unassembled_lines = []
 
@@ -358,7 +448,6 @@ def pseudo_assemble_alu_op(line, tokens, line_number, **kwargs):
 
     return (f'ALUFSET {o}',)
 
-# TODO: normalise method signatures?
 def pseudo_assemble_loadmari(line, tokens, line_number, **kwargs):
     # LOADMARI <20 bit address or :label>
 
@@ -392,7 +481,6 @@ def pseudo_assemble_loadmari(line, tokens, line_number, **kwargs):
 
 
 # Stack ops
-# TODO: add compiler protection
 
 def pseudo_assemble_stack_push(line, tokens, line_number, **kwargs):
     # STACKPUSH <source>
@@ -457,12 +545,8 @@ def pseudo_assemble_call(line, tokens, line_number, **kwargs):
     # back up A, B, C, D, address upper, lower to stack
 
     # registers
-    for r in 'ABCD':
+    for r in 'ABC':
         output += pseudo_assemble_stack_push(line, (None, r), line_number)
-
-    # copy current address
-    # output += pseudo_assemble_loadmari(line, (None, str(kwargs['current_ins_address'])), line_number)
-
 
     # copy current address
     current_ins_address = kwargs['current_ins_address']
@@ -478,12 +562,9 @@ def pseudo_assemble_call(line, tokens, line_number, **kwargs):
     output += [
         f'>LOADIU A {return_address}_0_5',
         f'>LOADIL A {return_address}_5_10',
-        'COPY A MARH',
         f'>LOADIU B {return_address}_10_15',
         f'>LOADIL B {return_address}_15_20',
-        'COPY B MARL',
     ]
-
     
     # upper and lower
     for r in 'AB':
@@ -495,7 +576,7 @@ def pseudo_assemble_call(line, tokens, line_number, **kwargs):
 
     # executed after RETURN
     # pop D, C, B, A
-    for r in 'DCBA':
+    for r in 'CBA':
         output += pseudo_assemble_stack_pop(line, (None, r), line_number)
     
     return output
@@ -519,8 +600,6 @@ def pseudo_assemble_return(line, tokens, line_number, **kwargs):
     output.append('JUMP 00')
     
     return output
-
-# TODO: setup base interrupts address
 
 
 '''
@@ -590,8 +669,6 @@ I1  I0
 1   0   Shift left
 1   1   Load            divide clocks here based on Low/high bits
 
-TODO: check if its worth without killing clock in A
-
 '''
 
 def pseudo_assemble_a_op(line, tokens, line_number, **kwargs):
@@ -610,8 +687,6 @@ def pseudo_assemble_a_op(line, tokens, line_number, **kwargs):
     return (f'AOP {o}',)
     pass
 
-
-# TODO: -1 from here and handle that in the checker
 pseudo_instructions = {
     'LOADI'             : [pseudo_assemble_loadi,       2],
     'LOADI_SIGNED'      : [pseudo_assemble_loadi,       2],
@@ -630,9 +705,7 @@ for pj in pseudo_jumps.keys():
 
 isr_being_processed = False
 output = program_output
-for line in source_lines:
-    line_number +=1
-    line = line.strip()
+for file, line_number, line in source_lines:
 
     if line.startswith('/*'):
         multi_line_comment_block = True
@@ -643,7 +716,7 @@ for line in source_lines:
         continue # Ignore comments and empty lines
 
 
-    current_ins_address = len(output) + (ISR_ADDRESS if isr_being_processed else 0)
+    current_ins_address = len(output) + (Constants.ISR_ADDRESS if isr_being_processed else 0)
 
     if line.startswith(':'):
         if re.search(r'[\s_]', line):
@@ -653,11 +726,12 @@ for line in source_lines:
             # move all further lines to ISR address
             isr_being_processed = True
             output = isr_output
-            pass
+            print(f'\033[35mISR'.ljust(15), line.ljust(10), format(Constants.ISR_ADDRESS, 'X').zfill(4), '\033[0m', sep='\t')
+        else:
+            addr_binary = format(current_ins_address, 'b').zfill(20) # generate 20 bit address
+            label_addresses[line] = addr_binary
+            print(f'\033[35mLABEL'.ljust(15), line.ljust(10), format(current_ins_address, 'X').zfill(4), str(current_ins_address).ljust(5), '\033[0m', sep='\t')
         
-        addr_binary = format(current_ins_address, 'b').zfill(20) # generate 20 bit address
-        label_addresses[line] = addr_binary
-        print(f'\033[35mLABEL'.ljust(15), line.ljust(10), str(current_ins_address).ljust(5), format(current_ins_address, 'X').zfill(4), '\033[0m', sep='\t')
         continue # Ignore label
 
     # Ignore trailing comments
@@ -665,13 +739,12 @@ for line in source_lines:
         line = line[:line.index('//')]
 
     tokens = line.split()
-    instruction = tokens[0].upper()
+    instruction = tokens[0]
     
     if instruction in instructions:
         output.append(assemble(line, tokens, line_number))
     elif instruction in pseudo_instructions:
         # TODO: use placeholders for colours
-        # TODO: use constants for these magic numbers
         print('\033[33mPSEUDO'.ljust(15), line.ljust(20), '\033[0m', sep='\t')
 
         max_length = pseudo_instructions[instruction][1] + 1
@@ -683,7 +756,6 @@ for line in source_lines:
         for m in output_mnemonics:
             if m[0] == '>':
                 print('\033[32mASSEMBLE LATER'.ljust(15), m.ljust(20), '\033[0m', sep='\t')
-                # TODO: refactor this to separate to save space?
                 label_unassembled_lines.append((len(output), line_number, line, isr_being_processed))
                 output.append(m)
             else:
@@ -720,41 +792,30 @@ for l in label_unassembled_lines:
     
     output[line_number] = assemble(line, line.split())
 
-#TODO: handle case different instructions properly
-
 # generate report
-# guidelines
-# total             00000 - FFFFF       1048576 words
-# program           00000 - FF7FF       1046528 words
-# ISR               FF800 - FFE0B          1548 words
-# stack             FFE0C - FFFFF           500 words
-
-PROGRAM_MAX_LENGTH = 1046528
-ISR_MAX_LENGTH = 1548
-
 print('\033[36m')
 print('====Memory Layout====')
 print('PROGRAM'.ljust(10), '00000', format(len(program_output) - 1, 'X').zfill(5), f'{len(program_output)} words', sep='\t')
 if len(isr_output) > 0:
-    print('ISR  '.ljust(10), format(ISR_ADDRESS, 'X').zfill(5), format(ISR_ADDRESS + len(program_output) - 1, 'X').zfill(5), f'{len(isr_output)} words', sep='\t')
+    print('ISR  '.ljust(10), format(Constants.ISR_ADDRESS, 'X').zfill(5), format(Constants.ISR_ADDRESS + len(program_output) - 1, 'X').zfill(5), f'{len(isr_output)} words', sep='\t')
 print('=====================')
 print('\033[0m')
 
 if len(isr_output) > 0:
     ex = []
-    if len(program_output) > PROGRAM_MAX_LENGTH:
-        ex.append(f'program code exceeds max size and overlaps with ISR code space by {len(program_output) - PROGRAM_MAX_LENGTH} words')
+    if len(program_output) > Constants.PROGRAM_MAX_LENGTH:
+        ex.append(f'program code exceeds max size and overlaps with ISR code space by {len(program_output) - Constants.PROGRAM_MAX_LENGTH} words')
     
-    if len(isr_output) > ISR_MAX_LENGTH:
-        ex.append(f'ISR code exceeds max size and overlaps with stack space by {len(isr_output) - ISR_MAX_LENGTH} words!')
+    if len(isr_output) > Constants.ISR_MAX_LENGTH:
+        ex.append(f'ISR code exceeds max size and overlaps with stack space by {len(isr_output) - Constants.ISR_MAX_LENGTH} words!')
     
     if ex: error_raw(ex)
-elif len(isr_output) == 0 and len(program_output) > (PROGRAM_MAX_LENGTH + ISR_MAX_LENGTH):
-    error_raw(f'program code exceeds max size and overlaps with stack space by {len(program_output) - (PROGRAM_MAX_LENGTH + ISR_MAX_LENGTH)} words')
+elif len(isr_output) == 0 and len(program_output) > (Constants.PROGRAM_MAX_LENGTH + Constants.ISR_MAX_LENGTH):
+    error_raw(f'program code exceeds max size and overlaps with stack space by {len(program_output) - (Constants.PROGRAM_MAX_LENGTH + Constants.ISR_MAX_LENGTH)} words')
     pass
 
 # generate output
-output_file = open(output_file_name, 'w')
+output_file = open(output_file_path, 'w')
 output_lines = ['v3.0 hex words addressed\n']
 
 def add_output_lines(output, base_address=0):
@@ -773,7 +834,7 @@ def add_output_lines(output, base_address=0):
         output_lines.append(output_line + '\n')
 
 add_output_lines(program_output)
-add_output_lines(isr_output, ISR_ADDRESS)
+add_output_lines(isr_output, Constants.ISR_ADDRESS)
 
 output_file.writelines(output_lines)
-output_file.close()
+output_file.close() 
