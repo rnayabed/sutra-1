@@ -21,8 +21,8 @@ I insisted on building every discrete component from scratch (instead of using b
 This project is consists of two parts
 - Hardware: The main digital logic design, made in Logisim Evolution, saved as `sutra_1.circ` 
 - Software
-    - রচয়িতা / Rochoyita `rochoyita.py`: Simple assembler that converts mnemonics into binary instructions and compiles them into a Logisim-Evolution compatible memory image. [Rochoyita Documentation](https://github.com/rnayabed/sutra-1/blob/master/docs/rochoyita.md)
-    - শিল্পী / Shilpi `shipli.py`: Simple 1-bit image generator for the 64x32 demo display included. [Shilpi Documentation](https://github.com/rnayabed/sutra-1/blob/master/docs/display.md#Shilpi)
+    - রচয়িতা / Rochoyita `rochoyita.py`: Assembler. [Rochoyita Documentation](https://github.com/rnayabed/sutra-1/blob/master/docs/rochoyita.md)
+    - শিল্পী / Shilpi `shipli.py`: Image generator for the 64x32 1-bit demo display. [Shilpi Documentation](https://github.com/rnayabed/sutra-1/blob/master/docs/display.md#Shilpi)
 
 ## Specifications
 
