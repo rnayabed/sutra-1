@@ -46,7 +46,7 @@ We can also provide it a 64x32 1-bit image formatted with pixel ON as '#' and OF
 I have also included some 1-bit images in `examples/art` that can be parsed by shilpi and rendered on Sutra-1
 
 ```shell
-python shilpi.py examples/art/umbrella.txt
+python shilpi.py examples/art/india.txt
 ```
 
 This generates an output assembly file with the name `art.S` which can then be compiled by rochoyita
